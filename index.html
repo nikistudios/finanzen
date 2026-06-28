@@ -51,7 +51,6 @@
   const state = {
     entries: load(),
     filter: "open",
-    balanceMode: "pair",
     menuOpen: false,
     modalOpen: false,
     openDropdown: null,
@@ -84,76 +83,6 @@
     return Object.values(map).filter(p=>Math.abs(p.net)>=0.005)
       .map(p=> p.net>0 ? {from:p.a,to:p.b,amount:p.net} : {from:p.b,to:p.a,amount:-p.net})
       .sort((x,y)=>y.amount-x.amount);
-  }
-
-  // Netto-Position pro Konto (positiv = bekommt noch, negativ = schuldet noch)
-  function accountNet(){
-    const net={};
-    state.entries.filter(e=>!e.settled).forEach(e=>{
-      const {d,c}=getDC(e); if(!d||!c||d===c) return;
-      const amt=parseFloat(e.amount)||0; if(amt<=0) return;
-      net[d]=(net[d]||0)-amt; net[c]=(net[c]||0)+amt;
-    });
-    return net;
-  }
-
-  // Optimaler Ausgleich: möglichst wenige Überweisungen über alle Konten
-  function computeSettlement(){
-    const net=accountNet();
-    const C=[], D=[];
-    Object.keys(net).forEach(k=>{ const v=net[k];
-      if(v>0.005) C.push({k,v}); else if(v<-0.005) D.push({k,v:-v}); });
-    C.sort((a,b)=>b.v-a.v); D.sort((a,b)=>b.v-a.v);
-    const res=[]; let i=0,j=0;
-    while(i<D.length && j<C.length){
-      const pay=Math.min(D[i].v, C[j].v);
-      if(pay>0.005) res.push({from:D[i].k, to:C[j].k, amount:pay});
-      D[i].v-=pay; C[j].v-=pay;
-      if(D[i].v<=0.005) i++;
-      if(C[j].v<=0.005) j++;
-    }
-    return res.sort((a,b)=>b.amount-a.amount);
-  }
-
-  // Sind zwei Überweisungs-Listen identisch? (für "schon optimal"-Hinweis)
-  function sameTransfers(a,b){
-    if(a.length!==b.length) return false;
-    const key=l=>l.map(p=>`${p.from}>${p.to}:${Math.round(p.amount*100)}`).sort().join("|");
-    return key(a)===key(b);
-  }
-
-  // Haushalts-Logik: Alex & Christian (ac) ist ein gemeinsames Konto von alex & christian.
-  // Gleicher Teil ihrer Einzelschulden -> aufs gemeinsame Konto. Überschuss bleibt beim
-  // höher Verschuldeten; der andere bekommt den Überschuss vom gemeinsamen Konto zurück.
-  function computeHousehold(){
-    const t={};
-    computeBalances().forEach(p=>{ t[p.from+">"+p.to]=(t[p.from+">"+p.to]||0)+p.amount; });
-
-    // gemeinsame Gläubiger, denen sowohl alex als auch christian schulden
-    const common=Object.keys(t).filter(k=>k.startsWith("alex>")).map(k=>k.split(">")[1])
-      .filter(x=> x!=="ac" && t["christian>"+x]!==undefined);
-
-    common.forEach(x=>{
-      const da=t["alex>"+x]||0, dc=t["christian>"+x]||0;
-      if(da<=0||dc<=0) return;
-      const eq=Math.min(da,dc), diff=Math.abs(da-dc);
-      const bigger = da>=dc ? "alex" : "christian";
-      const smaller= da>=dc ? "christian" : "alex";
-      delete t["alex>"+x]; delete t["christian>"+x];
-      t["ac>"+x]=(t["ac>"+x]||0)+2*eq;
-      if(diff>0.005){
-        t[bigger+">"+x]=(t[bigger+">"+x]||0)+diff;  // Überschuss bleibt beim höher Verschuldeten
-        t["ac>"+smaller]=(t["ac>"+smaller]||0)+diff; // der andere bekommt ihn vom gemeinsamen Konto
-      }
-    });
-
-    // gegenläufige Paare verrechnen (wichtig, wenn eine Begleichung eine Gegenrichtung erzeugt)
-    const net={};
-    Object.keys(t).forEach(k=>{ const [a,b]=k.split(">"); const lo=a<b?a:b, hi=a<b?b:a, pk=lo+"|"+hi;
-      net[pk]=net[pk]||{lo,hi,v:0}; net[pk].v += (a===lo ? t[k] : -t[k]); });
-    return Object.values(net).filter(o=>Math.abs(o.v)>0.005)
-      .map(o=> o.v>0 ? {from:o.lo,to:o.hi,amount:o.v} : {from:o.hi,to:o.lo,amount:-o.v})
-      .sort((a,b)=>b.amount-a.amount);
   }
 
   /* ====== Render ====== */
@@ -205,12 +134,9 @@
         </div>
 
         <div style="margin-top:26px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin:0 4px 12px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 12px">
             <div style="font-size:13px;font-weight:700;letter-spacing:-.1px">Salden</div>
-            <div style="display:flex;gap:3px;background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:3px">
-              <button onclick="App.setBalMode('pair')" style="${modeBtn('pair')}">Pro Paar</button>
-              <button onclick="App.setBalMode('optimal')" style="${modeBtn('optimal')}">Optimal</button>
-            </div>
+            <div style="font-size:12px;color:#5E6775">wer schuldet wem</div>
           </div>
           ${renderBalances(bal, hasOpen)}
         </div>
@@ -242,10 +168,6 @@
     return `<button onclick="App.setFilter('${key}')" style="${state.filter===key?active:base}">${label}</button>`;
   }
 
-  function modeBtn(m){
-    const on=state.balanceMode===m;
-    return `border:none;font-family:inherit;font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:8px;cursor:pointer;white-space:nowrap;${on?"background:#262B36;color:#F2F5F9":"background:transparent;color:#97A1B0"}`;
-  }
 
   function balanceCards(list){
     return list.map(p=>`
@@ -281,17 +203,6 @@
   }
 
   function renderBalances(bal, hasOpen){
-    const noteStyle="font-size:11.5px;color:#5E6775;text-align:center;margin:4px 6px 0;line-height:1.5";
-    if(state.balanceMode==="optimal"){
-      const opt=computeSettlement();
-      if(opt.length>0){
-        const note = sameTransfers(opt,bal)
-          ? `<div style="${noteStyle}">ℹ️ Schon optimal – nichts weiter zu verrechnen</div>`
-          : `<div style="${noteStyle}">⚡ So wenige Überweisungen wie möglich – alles verrechnet</div>`;
-        return balanceCards(opt)+note;
-      }
-      return hasOpen ? allClearCard() : balEmptyCard();
-    }
     if(bal.length>0) return balanceCards(bal);
     if(hasOpen) return allClearCard();
     return balEmptyCard();
@@ -434,7 +345,6 @@
     toggleMenu(ev){ if(ev) ev.stopPropagation(); state.menuOpen=!state.menuOpen; render(); },
     closeMenu(){ state.menuOpen=false; render(); },
     setFilter(f){ state.filter=f; render(); },
-    setBalMode(m){ state.balanceMode=m; render(); },
     settleBalance(from,to,amount){
       if(confirm(`${ACCOUNTS[from].name} → ${ACCOUNTS[to].name}: ${fmt(amount)} als erledigt markieren?\n\nVerbucht eine Zahlung (rückgängig durch Löschen in den Buchungen).`)){
         const entries=state.entries.slice();
