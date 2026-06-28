@@ -51,6 +51,7 @@
     filter: "open",
     menuOpen: false,
     modalOpen: false,
+    openDropdown: null,
     editId: null,
     form: { type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }
   };
@@ -232,6 +233,23 @@
   }
   function lblStyle(){ return "display:block;font-size:12px;color:#97A1B0;margin:0 0 6px 2px;font-weight:600"; }
 
+  // Eigenes Dropdown (statt nativem <select>, das auf iOS unlesbar wird)
+  function dropdown(id, sel, opts){
+    const cur=opts.find(o=>o.value===sel);
+    const open=state.openDropdown===id;
+    const trigger=`<div onclick="App.toggleDropdown('${id}')" style="width:100%;background:#0E1116;border:1px solid ${open?"#3A3F4D":"#242A33"};color:#F2F5F9;border-radius:12px;padding:13px 14px;font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">
+        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cur?esc(cur.label):"—"}</span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="#97A1B0" style="flex:none;transition:transform .2s;transform:rotate(${open?"180":"0"}deg)"><path d="M8 11L3 6h10z"/></svg>
+      </div>`;
+    const list=open?`<div style="margin-top:6px;background:#0E1116;border:1px solid #242A33;border-radius:12px;overflow:hidden">
+        ${opts.map((o,i)=>`<div onclick="App.selectDropdown('${id}','${o.value}')" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;font-size:15px;color:#F2F5F9;cursor:pointer;${i>0?"border-top:1px solid rgba(255,255,255,.05);":""}${o.value===sel?"background:#1A1E27;":""}">
+            <span>${esc(o.label)}</span>
+            ${o.value===sel?`<svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8l3.2 3.2L13 4.6" stroke="${ACCENT[0]}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`:""}
+          </div>`).join("")}
+      </div>`:``;
+    return trigger+list;
+  }
+
   function renderModal(){
     const f=state.form;
     const isCustom=f.type==="custom";
@@ -240,18 +258,18 @@
     const hintC=isCustom?null:(tm?tm.creditor:null);
     const isEdit=state.editId!==null;
 
-    const typeOpts=Object.keys(TYPES).map(k=>`<option value="${k}" ${k===f.type?"selected":""}>${esc(TYPES[k].label)}</option>`).join("");
-    const accOpts=(sel)=>Object.keys(ACCOUNTS).map(k=>`<option value="${k}" ${k===sel?"selected":""}>${esc(ACCOUNTS[k].name)}</option>`).join("");
+    const typeOptions=Object.keys(TYPES).map(k=>({value:k,label:TYPES[k].label}));
+    const accountOptions=Object.keys(ACCOUNTS).map(k=>({value:k,label:ACCOUNTS[k].name}));
 
     const customFields=isCustom ? `
       <div style="display:flex;gap:10px;margin-bottom:14px">
-        <div style="flex:1">
+        <div style="flex:1;min-width:0">
           <label style="${lblStyle()}">Von (schuldet)</label>
-          <select onchange="App.onField('debtor',this.value)" style="${selStyle()}">${accOpts(f.debtor)}</select>
+          ${dropdown('debtor',f.debtor,accountOptions)}
         </div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:0">
           <label style="${lblStyle()}">An (bekommt)</label>
-          <select onchange="App.onField('creditor',this.value)" style="${selStyle()}">${accOpts(f.creditor)}</select>
+          ${dropdown('creditor',f.creditor,accountOptions)}
         </div>
       </div>` : ``;
 
@@ -275,7 +293,7 @@
 
         <div style="margin-bottom:14px">
           <label style="${lblStyle()}">Art</label>
-          <select onchange="App.onType(this.value)" style="${selStyle()}">${typeOpts}</select>
+          ${dropdown('type',f.type,typeOptions)}
         </div>
 
         ${customFields}
@@ -286,15 +304,13 @@
           <input value="${esc(f.amount)}" oninput="App.onField('amount',this.value)" type="number" inputmode="decimal" step="0.01" placeholder="0,00" style="${inpStyle(true)}">
         </div>
 
-        <div style="display:flex;gap:10px;margin-bottom:6px">
-          <div style="flex:1">
-            <label style="${lblStyle()}">Datum</label>
-            <input value="${esc(f.date)}" oninput="App.onField('date',this.value)" type="date" style="${inpStyle(false)}">
-          </div>
-          <div style="flex:1.4">
-            <label style="${lblStyle()}">Notiz (optional)</label>
-            <input value="${esc(f.note)}" oninput="App.onField('note',this.value)" type="text" placeholder="z.B. Mai-Auszahlung" style="${inpStyle(false)}">
-          </div>
+        <div style="margin-bottom:14px">
+          <label style="${lblStyle()}">Datum</label>
+          <input value="${esc(f.date)}" oninput="App.onField('date',this.value)" type="date" style="${inpStyle(false)}">
+        </div>
+        <div style="margin-bottom:6px">
+          <label style="${lblStyle()}">Notiz (optional)</label>
+          <input value="${esc(f.note)}" oninput="App.onField('note',this.value)" type="text" placeholder="z.B. Mai-Auszahlung" style="${inpStyle(false)}">
         </div>
 
         <button onclick="App.saveModal()" style="width:100%;background:${ACC_GRAD};color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;font-family:inherit;box-shadow:0 6px 18px ${ACCENT[0]}55">${isEdit?"Speichern":"Hinzufügen"}</button>
@@ -309,15 +325,16 @@
     closeMenu(){ state.menuOpen=false; render(); },
     setFilter(f){ state.filter=f; render(); },
 
-    openNew(){ state.modalOpen=true; state.editId=null; state.menuOpen=false;
+    openNew(){ state.modalOpen=true; state.editId=null; state.menuOpen=false; state.openDropdown=null;
       state.form={ type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; render(); },
     openEdit(id){ const e=state.entries.find(x=>x.id===id); if(!e) return;
-      state.modalOpen=true; state.editId=id;
+      state.modalOpen=true; state.editId=id; state.openDropdown=null;
       state.form={ type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac", amount:String(e.amount), date:e.date||today(), note:e.note||"" }; render(); },
-    closeModal(){ state.modalOpen=false; state.editId=null; render(); },
+    closeModal(){ state.modalOpen=false; state.editId=null; state.openDropdown=null; render(); },
     closeIfOverlay(ev){ if(ev.target===ev.currentTarget) App.closeModal(); },
 
-    onType(v){ state.form.type=v; render(); },
+    toggleDropdown(id){ state.openDropdown = state.openDropdown===id ? null : id; render(); },
+    selectDropdown(id,v){ if(id==="type") state.form.type=v; else state.form[id]=v; state.openDropdown=null; render(); },
     onField(k,v){ state.form[k]=v; },  // kein re-render → Fokus bleibt beim Tippen
 
     saveModal(){
