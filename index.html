@@ -59,14 +59,7 @@
     form: { type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }
   };
 
-  function load(){ try{
-      let data=JSON.parse(localStorage.getItem(STORE_KEY))||[];
-      // Migration: alte "payment"-Gegenbuchungen entfernen – neues System nutzt nur den Erledigt-Haken
-      const before=data.length;
-      data=data.filter(e=>e.type!=="payment");
-      if(data.length!==before) localStorage.setItem(STORE_KEY, JSON.stringify(data));
-      return data;
-    }catch(e){ return []; } }
+  function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||[]; }catch(e){ return []; } }
   function persist(entries){ state.entries=entries; localStorage.setItem(STORE_KEY, JSON.stringify(entries)); render(); }
   function today(){ return new Date().toISOString().slice(0,10); }
 
@@ -75,7 +68,7 @@
   function av(key,size){ const a=ACCOUNTS[key];
     return `width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex:none;background:linear-gradient(135deg,${a.color[0]},${a.color[1]});font-size:${Math.round(size*0.38)}px;letter-spacing:-.02em;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.3)`; }
   function dot(key){ const a=ACCOUNTS[key]; return `width:9px;height:9px;border-radius:50%;flex:none;background:linear-gradient(135deg,${a.color[0]},${a.color[1]})`; }
-  function getDC(e){ if(e.type==="custom") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
+  function getDC(e){ if(e.type==="custom"||e.type==="payment") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
   function pairKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
   function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
@@ -269,9 +262,9 @@
             <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
             <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
           </div>
-          ${state.balanceMode==="pair" ? `<button onclick="App.settleBalance('${p.from}','${p.to}')" style="flex:none;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#C7CBFF;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px">
+          <button onclick="App.settleBalance('${p.from}','${p.to}',${Math.round(p.amount*100)/100})" style="flex:none;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#C7CBFF;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#C7CBFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Erledigt
-          </button>` : ``}
+          </button>
         </div>
       </div>`).join("");
   }
@@ -290,11 +283,11 @@
   function renderBalances(bal, hasOpen){
     const noteStyle="font-size:11.5px;color:#5E6775;text-align:center;margin:4px 6px 0;line-height:1.5";
     if(state.balanceMode==="optimal"){
-      const opt=computeHousehold();
+      const opt=computeSettlement();
       if(opt.length>0){
         const note = sameTransfers(opt,bal)
           ? `<div style="${noteStyle}">ℹ️ Schon optimal – nichts weiter zu verrechnen</div>`
-          : `<div style="${noteStyle}">⚡ Optimal verrechnet – Alex & Christian als gemeinsames Konto</div>`;
+          : `<div style="${noteStyle}">⚡ So wenige Überweisungen wie möglich – alles verrechnet</div>`;
         return balanceCards(opt)+note;
       }
       return hasOpen ? allClearCard() : balEmptyCard();
@@ -313,14 +306,16 @@
       return `<div style="text-align:center;color:#5E6775;font-size:14px;padding:30px 16px;border:1px dashed rgba(255,255,255,.10);border-radius:20px">Keine Buchungen in dieser Ansicht.</div>`;
     }
     return list.map(e=>{
-      const {d,c}=getDC(e);
-      const t = TYPES[e.type]||{label:e.type};
+      const isPay=e.type==="payment";
+      const d = isPay ? e.from : getDC(e).d;
+      const c = isPay ? e.to   : getDC(e).c;
+      const t = isPay ? {label:"✓ Erledigt"} : (TYPES[e.type]||{label:e.type});
       const dateStr=e.date? new Date(e.date+"T00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"}):"";
       const metaStr=esc(dateStr+(e.note? " · "+e.note:""));
       const checkBase="width:26px;height:26px;border-radius:50%;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;";
       const checkStyle=e.settled ? checkBase+"background:"+ACC_GRAD+";border:1px solid transparent" : checkBase+"background:transparent;border:2px solid #2B3340";
       const amtBase="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none;margin-left:8px;";
-      const amountStyle=e.settled ? amtBase+"text-decoration:line-through;color:#5E6775" : amtBase+"color:#F2F5F9";
+      const amountStyle=e.settled ? amtBase+"text-decoration:line-through;color:#5E6775" : amtBase+(isPay?"color:#8B8FE8":"color:#F2F5F9");
       const route=(d&&c) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;color:#97A1B0">
             <span style="${dot(d)}"></span><span>${ACCOUNTS[d].short}</span>
             <span style="color:#5E6775">→</span>
@@ -335,7 +330,7 @@
             ${route}
             <div style="font-size:11.5px;color:#5E6775;margin-top:3px">${metaStr}</div>
           </div>
-          <div style="${amountStyle}">${fmt(parseFloat(e.amount)||0)}</div>
+          <div style="${amountStyle}">${isPay?"−":""}${fmt(parseFloat(e.amount)||0)}</div>
         </div>`;
     }).join("");
   }
@@ -440,14 +435,11 @@
     closeMenu(){ state.menuOpen=false; render(); },
     setFilter(f){ state.filter=f; render(); },
     setBalMode(m){ state.balanceMode=m; render(); },
-    settleBalance(from,to){
-      if(confirm(`${ACCOUNTS[from].name} ↔ ${ACCOUNTS[to].name}: alle offenen Buchungen zwischen den beiden als erledigt markieren?`)){
-        const entries=state.entries.map(e=>{
-          if(e.settled) return e;
-          const {d,c}=getDC(e); if(!d||!c) return e;
-          if((d===from&&c===to)||(d===to&&c===from)) return {...e, settled:true, settledDate:today()};
-          return e;
-        });
+    settleBalance(from,to,amount){
+      if(confirm(`${ACCOUNTS[from].name} → ${ACCOUNTS[to].name}: ${fmt(amount)} als erledigt markieren?\n\nVerbucht eine Zahlung (rückgängig durch Löschen in den Buchungen).`)){
+        const entries=state.entries.slice();
+        entries.push({ id:Date.now(), type:"payment", from, to, debtor:to, creditor:from,
+          amount, currency:CUR, date:today(), note:"", settled:false });
         persist(entries);
       }
     },
@@ -455,6 +447,12 @@
     openNew(){ state.modalOpen=true; state.editId=null; state.menuOpen=false; state.openDropdown=null;
       state.form={ type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; render(); },
     openEdit(id){ const e=state.entries.find(x=>x.id===id); if(!e) return;
+      if(e.type==="payment"){
+        if(confirm("Diese Zahlung (Erledigung) rückgängig machen / löschen?")){
+          persist(state.entries.filter(x=>x.id!==id));
+        }
+        return;
+      }
       state.modalOpen=true; state.editId=id; state.openDropdown=null;
       state.form={ type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac", amount:String(e.amount), date:e.date||today(), note:e.note||"" }; render(); },
     closeModal(){ state.modalOpen=false; state.editId=null; state.openDropdown=null; render(); },
