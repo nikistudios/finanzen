@@ -51,6 +51,7 @@
   const state = {
     entries: load(),
     filter: "open",
+    balanceMode: "pair",
     menuOpen: false,
     modalOpen: false,
     openDropdown: null,
@@ -83,6 +84,35 @@
     return Object.values(map).filter(p=>Math.abs(p.net)>=0.005)
       .map(p=> p.net>0 ? {from:p.a,to:p.b,amount:p.net} : {from:p.b,to:p.a,amount:-p.net})
       .sort((x,y)=>y.amount-x.amount);
+  }
+
+  // Netto-Position pro Konto (positiv = bekommt noch, negativ = schuldet noch)
+  function accountNet(){
+    const net={};
+    state.entries.filter(e=>!e.settled).forEach(e=>{
+      const {d,c}=getDC(e); if(!d||!c||d===c) return;
+      const amt=parseFloat(e.amount)||0; if(amt<=0) return;
+      net[d]=(net[d]||0)-amt; net[c]=(net[c]||0)+amt;
+    });
+    return net;
+  }
+
+  // Optimaler Ausgleich: möglichst wenige Überweisungen über alle Konten
+  function computeSettlement(){
+    const net=accountNet();
+    const C=[], D=[];
+    Object.keys(net).forEach(k=>{ const v=net[k];
+      if(v>0.005) C.push({k,v}); else if(v<-0.005) D.push({k,v:-v}); });
+    C.sort((a,b)=>b.v-a.v); D.sort((a,b)=>b.v-a.v);
+    const res=[]; let i=0,j=0;
+    while(i<D.length && j<C.length){
+      const pay=Math.min(D[i].v, C[j].v);
+      if(pay>0.005) res.push({from:D[i].k, to:C[j].k, amount:pay});
+      D[i].v-=pay; C[j].v-=pay;
+      if(D[i].v<=0.005) i++;
+      if(C[j].v<=0.005) j++;
+    }
+    return res.sort((a,b)=>b.amount-a.amount);
   }
 
   /* ====== Render ====== */
@@ -134,9 +164,12 @@
         </div>
 
         <div style="margin-top:26px">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:0 4px 12px">
             <div style="font-size:13px;font-weight:700;letter-spacing:-.1px">Salden</div>
-            <div style="font-size:12px;color:#5E6775">wer schuldet wem</div>
+            <div style="display:flex;gap:3px;background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:3px">
+              <button onclick="App.setBalMode('pair')" style="${modeBtn('pair')}">Pro Paar</button>
+              <button onclick="App.setBalMode('optimal')" style="${modeBtn('optimal')}">Optimal</button>
+            </div>
           </div>
           ${renderBalances(bal, hasOpen)}
         </div>
@@ -168,28 +201,47 @@
     return `<button onclick="App.setFilter('${key}')" style="${state.filter===key?active:base}">${label}</button>`;
   }
 
-  function renderBalances(bal, hasOpen){
-    if(bal.length>0){
-      return bal.map(p=>`
-        <div style="background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:16px 17px;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-            <div style="${av(p.from,38)}">${ACCOUNTS[p.from].av}</div>
-            <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.from].name}</span>
-            <span style="color:#5E6775;font-size:17px;margin:0 1px">→</span>
-            <div style="${av(p.to,38)}">${ACCOUNTS[p.to].av}</div>
-            <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.to].name}</span>
-          </div>
-          <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;margin-top:13px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
-          <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
-        </div>`).join("");
-    }
-    if(hasOpen){
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:30px 16px;background:rgba(99,102,241,.10);border:1px solid rgba(99,102,241,.28);border-radius:20px">
-        <div style="width:46px;height:46px;border-radius:50%;background:${ACC_GRAD};display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
-        <div style="font-size:15px;font-weight:600;color:#C7CBFF">Alles ausgeglichen</div>
-      </div>`;
-    }
+  function modeBtn(m){
+    const on=state.balanceMode===m;
+    return `border:none;font-family:inherit;font-size:12px;font-weight:600;padding:5px 11px;border-radius:8px;cursor:pointer;${on?"background:#262B36;color:#F2F5F9":"background:transparent;color:#97A1B0"}`;
+  }
+
+  function balanceCards(list){
+    return list.map(p=>`
+      <div style="background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:16px 17px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <div style="${av(p.from,38)}">${ACCOUNTS[p.from].av}</div>
+          <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.from].name}</span>
+          <span style="color:#5E6775;font-size:17px;margin:0 1px">→</span>
+          <div style="${av(p.to,38)}">${ACCOUNTS[p.to].av}</div>
+          <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.to].name}</span>
+        </div>
+        <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;margin-top:13px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
+        <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
+      </div>`).join("");
+  }
+
+  function allClearCard(){
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:30px 16px;background:rgba(99,102,241,.10);border:1px solid rgba(99,102,241,.28);border-radius:20px">
+      <div style="width:46px;height:46px;border-radius:50%;background:${ACC_GRAD};display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+      <div style="font-size:15px;font-weight:600;color:#C7CBFF">Alles ausgeglichen</div>
+    </div>`;
+  }
+
+  function balEmptyCard(){
     return `<div style="text-align:center;color:#5E6775;font-size:14px;padding:34px 16px;border:1px dashed rgba(255,255,255,.10);border-radius:20px;line-height:1.7">Noch keine Buchungen.<br>Tippe unten auf <span style="color:#8B8FE8;font-weight:700">+</span></div>`;
+  }
+
+  function renderBalances(bal, hasOpen){
+    const list = state.balanceMode==="optimal" ? computeSettlement() : bal;
+    if(list.length>0){
+      const note = state.balanceMode==="optimal"
+        ? `<div style="font-size:11.5px;color:#5E6775;text-align:center;margin:4px 6px 0;line-height:1.5">⚡ So wenige Überweisungen wie möglich – alles über alle Konten verrechnet</div>`
+        : ``;
+      return balanceCards(list)+note;
+    }
+    if(hasOpen) return allClearCard();
+    return balEmptyCard();
   }
 
   function renderEntries(){
@@ -326,6 +378,7 @@
     toggleMenu(ev){ if(ev) ev.stopPropagation(); state.menuOpen=!state.menuOpen; render(); },
     closeMenu(){ state.menuOpen=false; render(); },
     setFilter(f){ state.filter=f; render(); },
+    setBalMode(m){ state.balanceMode=m; render(); },
 
     openNew(){ state.modalOpen=true; state.editId=null; state.menuOpen=false; state.openDropdown=null;
       state.form={ type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; render(); },
