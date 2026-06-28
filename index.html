@@ -21,273 +21,147 @@
     --accent:#3fb950;
     --accent-soft:rgba(63,185,80,.14);
     --red:#f85149;
-    --red-soft:rgba(248,81,73,.14);
-    --blue:#58a6ff;
-    --amber:#e3b341;
     --radius:16px;
     --shadow:0 6px 24px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
-    background:var(--bg);
-    color:var(--text);
+    background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    font-size:16px;
-    line-height:1.45;
-    padding:0 0 48px;
-    -webkit-font-smoothing:antialiased;
+    font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;
+    padding:0 0 120px;
   }
-  .wrap{max-width:640px;margin:0 auto;padding:0 16px}
+  .wrap{max-width:600px;margin:0 auto;padding:0 16px}
 
   /* Header */
-  header{
-    padding:26px 16px 18px;
-    max-width:640px;margin:0 auto;
+  header{max-width:600px;margin:0 auto;padding:26px 16px 14px;
+    display:flex;align-items:flex-start;justify-content:space-between;position:relative}
+  header h1{font-size:21px;margin:0;letter-spacing:-.3px}
+  header p{margin:3px 0 0;color:var(--muted);font-size:13px}
+  .menu-btn{
+    background:var(--bg-2);border:1px solid var(--border);color:var(--text);
+    width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer;flex:none;
+    display:flex;align-items:center;justify-content:center;
   }
-  header h1{font-size:22px;margin:0;letter-spacing:-.3px}
-  header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  .menu{
+    position:absolute;top:64px;right:16px;z-index:30;
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    box-shadow:var(--shadow);overflow:hidden;min-width:200px;
+  }
+  .menu button{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    background:none;border:none;color:var(--text);font-size:15px;
+    padding:13px 16px;cursor:pointer;font-family:inherit;
+  }
+  .menu button:hover{background:var(--card-2)}
+  .menu button.danger{color:var(--red);border-top:1px solid var(--border)}
 
-  /* Sections */
-  section{margin-top:22px}
-  .sec-title{
-    display:flex;align-items:center;justify-content:space-between;
-    font-size:13px;text-transform:uppercase;letter-spacing:.6px;
-    color:var(--muted);font-weight:600;margin:0 4px 10px;
-  }
+  section{margin-top:20px}
+  .sec-title{font-size:12px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);font-weight:600;margin:0 4px 10px}
 
   /* Balance cards */
-  .balance-group{margin-bottom:18px}
-  .cur-badge{
-    display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;
-    padding:3px 9px;border-radius:999px;background:var(--bg-2);
-    color:var(--muted);border:1px solid var(--border);margin:0 0 8px 4px;
-  }
-  .bcard{
-    background:var(--card);border:1px solid var(--border);
-    border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;
-    box-shadow:var(--shadow);
-  }
+  .bcard{background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:15px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
   .bcard .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .chip{
-    display:inline-flex;align-items:center;gap:6px;
-    font-size:13px;font-weight:600;padding:5px 11px;border-radius:999px;
-    background:var(--card-2);border:1px solid var(--border);white-space:nowrap;
-  }
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
+    padding:5px 11px;border-radius:999px;background:var(--card-2);border:1px solid var(--border);white-space:nowrap}
   .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .arrow{color:var(--muted);font-size:15px;flex:none}
-  .bcard .amt{
-    margin-top:10px;font-size:24px;font-weight:700;letter-spacing:-.5px;
-    font-variant-numeric:tabular-nums;
-  }
-  .bcard .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .bcard .amt{margin-top:11px;font-size:25px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .bcard .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
 
-  .empty{
-    text-align:center;color:var(--muted-2);font-size:14px;
-    padding:28px 16px;border:1px dashed var(--border);border-radius:var(--radius);
-  }
-  .all-clear{
-    text-align:center;color:var(--accent);font-size:15px;font-weight:600;
-    padding:26px 16px;background:var(--accent-soft);
-    border:1px solid rgba(63,185,80,.25);border-radius:var(--radius);
-  }
+  .empty{text-align:center;color:var(--muted-2);font-size:14px;
+    padding:30px 16px;border:1px dashed var(--border);border-radius:var(--radius)}
+  .all-clear{text-align:center;color:var(--accent);font-size:15px;font-weight:600;
+    padding:28px 16px;background:var(--accent-soft);
+    border:1px solid rgba(63,185,80,.25);border-radius:var(--radius)}
 
-  /* Account overview */
-  .acc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .acc{
-    background:var(--card);border:1px solid var(--border);
-    border-radius:14px;padding:12px 13px;
-  }
-  .acc .name{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text)}
-  .acc .vals{margin-top:8px;display:flex;flex-direction:column;gap:3px}
-  .acc .v{font-size:14px;font-variant-numeric:tabular-nums;font-weight:600}
-  .acc .v small{font-size:11px;color:var(--muted);font-weight:500;margin-left:4px}
-  .pos{color:var(--accent)}
-  .neg{color:var(--red)}
-  .zero{color:var(--muted-2)}
-
-  /* Form */
-  .form-card{
-    background:var(--card);border:1px solid var(--border);
-    border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
-  }
-  label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px 2px;font-weight:600}
-  .field{margin-bottom:13px}
-  .row{display:flex;gap:10px}
-  .row .field{flex:1;margin-bottom:13px}
-  input,select,textarea{
-    width:100%;background:var(--bg-2);border:1px solid var(--border);
-    color:var(--text);border-radius:11px;padding:12px 13px;font-size:16px;
-    font-family:inherit;outline:none;transition:border-color .15s;
-  }
-  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-  select{appearance:none;-webkit-appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b97a7' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;
-  }
-  .seg{display:flex;gap:8px}
-  .seg button{
-    flex:1;background:var(--bg-2);border:1px solid var(--border);color:var(--muted);
-    border-radius:11px;padding:11px;font-size:15px;font-weight:600;cursor:pointer;
-    transition:all .15s;font-family:inherit;
-  }
-  .seg button.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-  .btn-add{
-    width:100%;background:var(--accent);color:#06210c;border:none;
-    border-radius:12px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;
-    margin-top:4px;font-family:inherit;transition:filter .15s;
-  }
-  .btn-add:active{filter:brightness(.92)}
-  .route-hint{
-    font-size:12px;color:var(--muted);margin:-4px 2px 12px;
-    display:flex;align-items:center;gap:6px;min-height:16px;
-  }
-  .hidden{display:none!important}
-
-  /* Filter tabs */
+  /* Tabs */
   .tabs{display:flex;gap:8px;margin:0 4px 12px}
-  .tabs button{
-    background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;
-    padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit;
-  }
+  .tabs button{background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;
+    padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit}
   .tabs button.active{background:var(--card);color:var(--text);border:1px solid var(--border)}
 
   /* Entry list */
-  .entry{
-    display:flex;align-items:center;gap:12px;
-    background:var(--card);border:1px solid var(--border);
-    border-radius:14px;padding:12px 13px;margin-bottom:8px;
-  }
-  .entry.settled{opacity:.55}
-  .check{
-    width:26px;height:26px;border-radius:50%;border:2px solid var(--border);
-    flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    transition:all .15s;background:transparent;
-  }
+  .entry{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--border);
+    border-radius:14px;padding:13px;margin-bottom:8px}
+  .entry.settled{opacity:.5}
+  .check{width:27px;height:27px;border-radius:50%;border:2px solid var(--border);flex:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
   .entry.settled .check{background:var(--accent);border-color:var(--accent)}
   .check svg{width:14px;height:14px;opacity:0}
   .entry.settled .check svg{opacity:1}
-  .entry .info{flex:1;min-width:0}
-  .entry .top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .entry .ttype{font-size:14px;font-weight:600}
-  .entry .route{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .entry .info{flex:1;min-width:0;cursor:pointer}
+  .entry .ttype{font-size:14.5px;font-weight:600}
+  .entry .route{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
   .entry .meta{font-size:11px;color:var(--muted-2);margin-top:3px}
-  .entry .right{text-align:right;flex:none}
-  .entry .eamt{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .entry .eamt{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
   .entry.settled .eamt{text-decoration:line-through}
-  .del{
-    background:none;border:none;color:var(--muted-2);font-size:18px;cursor:pointer;
-    padding:4px 2px 4px 6px;line-height:1;flex:none;
-  }
-  .del:active{color:var(--red)}
-  .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.3px}
-  .tag.eur{background:rgba(88,166,255,.15);color:var(--blue)}
-  .tag.usd{background:rgba(227,179,65,.15);color:var(--amber)}
 
-  /* Footer actions */
-  .foot{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
-  .foot button{
-    flex:1;min-width:130px;background:var(--bg-2);border:1px solid var(--border);
-    color:var(--text);border-radius:11px;padding:12px;font-size:14px;font-weight:600;
-    cursor:pointer;font-family:inherit;
-  }
-  .foot button.danger{color:var(--red);border-color:rgba(248,81,73,.3)}
-  .note{font-size:11.5px;color:var(--muted-2);text-align:center;margin-top:14px;line-height:1.5}
-
-  /* Edit hint on entries */
-  .entry .info{cursor:pointer}
+  /* FAB */
+  .fab{position:fixed;right:max(18px,calc(50% - 300px + 18px));
+    bottom:calc(22px + env(safe-area-inset-bottom));z-index:25;
+    width:60px;height:60px;border-radius:50%;border:none;background:var(--accent);
+    color:#06210c;font-size:34px;font-weight:300;line-height:1;cursor:pointer;
+    box-shadow:0 8px 24px rgba(63,185,80,.4);display:flex;align-items:center;justify-content:center}
+  .fab:active{filter:brightness(.92)}
 
   /* Modal */
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;
-    display:flex;align-items:flex-end;justify-content:center;
-    padding:0;backdrop-filter:blur(2px);
-  }
-  .modal{
-    background:var(--bg-2);border:1px solid var(--border);
-    border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
-    width:100%;max-width:640px;box-shadow:0 -10px 40px rgba(0,0,0,.5);
-    animation:slideUp .2s ease;
-  }
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;
+    display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+  .modal{background:var(--bg-2);border:1px solid var(--border);border-radius:20px 20px 0 0;
+    padding:18px 16px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:600px;
+    box-shadow:0 -10px 40px rgba(0,0,0,.5);animation:slideUp .2s ease;max-height:92vh;overflow-y:auto}
   @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  .modal-head{
-    display:flex;align-items:center;justify-content:space-between;
-    font-size:16px;font-weight:700;margin-bottom:16px;
-  }
-  .m-x{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 6px;line-height:1}
-  @media(min-width:560px){
-    .modal-overlay{align-items:center}
-    .modal{border-radius:20px;margin:0 16px}
-  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;font-size:17px;font-weight:700;margin-bottom:16px}
+  .m-x{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1}
+
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px 2px;font-weight:600}
+  .field{margin-bottom:13px}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  input,select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    border-radius:11px;padding:12px 13px;font-size:16px;font-family:inherit;outline:none;transition:border-color .15s}
+  input:focus,select:focus{border-color:var(--accent)}
+  select{appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b97a7' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+  .route-hint{font-size:12.5px;color:var(--muted);margin:-4px 2px 13px;display:flex;align-items:center;gap:6px;min-height:16px}
+  .btn-add{width:100%;background:var(--accent);color:#06210c;border:none;border-radius:12px;
+    padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;font-family:inherit}
+  .btn-add:active{filter:brightness(.92)}
+  .btn-del{width:100%;background:none;color:var(--red);border:none;padding:12px;font-size:14px;
+    font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit}
+  .hidden{display:none!important}
+  .note{font-size:11.5px;color:var(--muted-2);text-align:center;margin-top:16px;line-height:1.5;padding:0 8px}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>💸 Finanzen &amp; Schulden</h1>
-  <p>Wer schuldet wem – automatisch berechnet. Daten bleiben auf diesem Gerät.</p>
+  <div>
+    <h1>💸 Finanzen</h1>
+    <p>Wer schuldet wem</p>
+  </div>
+  <button class="menu-btn" id="menu-btn" aria-label="Menü">⋯</button>
+  <div id="menu" class="menu hidden">
+    <button data-m="export">⬇︎&nbsp; Backup exportieren</button>
+    <button data-m="import">⬆︎&nbsp; Backup importieren</button>
+    <button data-m="reset" class="danger">🗑&nbsp; Alles löschen</button>
+  </div>
 </header>
 
 <div class="wrap">
 
-  <!-- OFFENE SALDEN -->
   <section>
-    <div class="sec-title"><span>Offene Salden</span></div>
+    <div class="sec-title">Offene Salden</div>
     <div id="balances"></div>
   </section>
 
-  <!-- KONTEN ÜBERSICHT -->
   <section>
-    <div class="sec-title"><span>Konten-Übersicht</span></div>
-    <div id="accounts" class="acc-grid"></div>
-  </section>
-
-  <!-- NEUE BUCHUNG -->
-  <section>
-    <div class="sec-title"><span>Neue Buchung</span></div>
-    <div class="form-card">
-      <div class="field">
-        <label>Art</label>
-        <select id="f-type"></select>
-      </div>
-
-      <div id="route-hint" class="route-hint"></div>
-
-      <!-- Manuell: nur bei "Sonstige" -->
-      <div id="custom-fields" class="row hidden">
-        <div class="field">
-          <label>Von (schuldet)</label>
-          <select id="f-debtor"></select>
-        </div>
-        <div class="field">
-          <label>An (bekommt)</label>
-          <select id="f-creditor"></select>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Betrag (USD)</label>
-        <input id="f-amount" type="number" inputmode="decimal" step="0.01" placeholder="0,00">
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label>Datum</label>
-          <input id="f-date" type="date">
-        </div>
-        <div class="field" style="flex:1.4">
-          <label>Notiz (optional)</label>
-          <input id="f-note" type="text" placeholder="z.B. Mai-Auszahlung">
-        </div>
-      </div>
-
-      <button class="btn-add" id="add-btn">+ Buchung hinzufügen</button>
-    </div>
-  </section>
-
-  <!-- BUCHUNGEN -->
-  <section>
-    <div class="sec-title"><span>Buchungen</span></div>
+    <div class="sec-title">Buchungen</div>
     <div class="tabs" id="tabs">
       <button data-filter="open" class="active">Offen</button>
       <button data-filter="settled">Erledigt</button>
@@ -296,28 +170,21 @@
     <div id="entries"></div>
   </section>
 
-  <!-- BACKUP -->
-  <section>
-    <div class="sec-title"><span>Daten</span></div>
-    <div class="foot">
-      <button id="export-btn">⬇︎ Backup exportieren</button>
-      <button id="import-btn">⬆︎ Backup importieren</button>
-      <button id="reset-btn" class="danger">Alles löschen</button>
-    </div>
-    <input type="file" id="import-file" accept="application/json" class="hidden">
-    <p class="note">
-      Tipp am iPhone: Safari → Teilen → „Zum Home-Bildschirm" – dann startet es wie eine App.<br>
-      Mac &amp; Handy teilen sich die Daten nicht automatisch – nutze Export/Import zum Übertragen.
-    </p>
-  </section>
-
+  <p class="note">
+    Daten bleiben nur auf diesem Gerät. Am iPhone: Safari → Teilen → „Zum Home-Bildschirm".<br>
+    Geräte syncen nicht automatisch – über das ⋯-Menü exportieren/importieren.
+  </p>
 </div>
 
-<!-- EDIT MODAL -->
+<button class="fab" id="fab" aria-label="Neue Buchung">+</button>
+
+<input type="file" id="import-file" accept="application/json" class="hidden">
+
+<!-- ENTRY MODAL (Hinzufügen + Bearbeiten) -->
 <div id="modal" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-head">
-      <span>Buchung bearbeiten</span>
+      <span id="m-title">Neue Buchung</span>
       <button id="m-close" class="m-x">✕</button>
     </div>
     <div class="field">
@@ -349,7 +216,8 @@
         <input id="m-note" type="text" placeholder="z.B. Mai-Auszahlung">
       </div>
     </div>
-    <button class="btn-add" id="m-save">Änderungen speichern</button>
+    <button class="btn-add" id="m-save">Speichern</button>
+    <button class="btn-del hidden" id="m-del">Buchung löschen</button>
   </div>
 </div>
 
@@ -357,14 +225,12 @@
 (function(){
   "use strict";
 
-  /* ---------- Konfiguration ---------- */
   const ACCOUNTS = {
-    ac: { name:"Alex & Christian", short:"A&C",  color:"#3fb950" },
-    at: { name:"Alex (TikTok)",    short:"Alex", color:"#58a6ff" },
-    mp: { name:"Max Privat",       short:"Max P.", color:"#e3b341" },
-    mg: { name:"Max Geschäft",     short:"Max G.", color:"#bc8cff" }
+    ac: { name:"Alex & Christian", short:"A&C",   color:"#3fb950" },
+    at: { name:"Alex (TikTok)",    short:"Alex",  color:"#58a6ff" },
+    mp: { name:"Max Privat",       short:"Max P.",color:"#e3b341" },
+    mg: { name:"Max Geschäft",     short:"Max G.",color:"#bc8cff" }
   };
-
   // Feste Geldflüsse: debtor schuldet creditor
   const TYPES = {
     fanvue:  { label:"Fanvue Auszahlung",  debtor:"mg", creditor:"ac" },
@@ -373,365 +239,212 @@
     auslage: { label:"Auslage für A&C",    debtor:"ac", creditor:"mp" },
     custom:  { label:"Sonstige (manuell)", debtor:null, creditor:null }
   };
-
-  const CUR = "USD"; // einzige Währung
-
+  const CUR = "USD";
   const STORE_KEY = "finanzen_v1";
 
-  /* ---------- State ---------- */
   let entries = load();
   let filter = "open";
+  let editId = null;
 
-  function load(){
-    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-    catch(e){ return []; }
-  }
+  function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||[]; }catch(e){ return []; } }
   function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(entries)); }
-
-  /* ---------- Helpers ---------- */
   const $ = id => document.getElementById(id);
-
-  function fmt(amount, cur){
-    return new Intl.NumberFormat("de-DE",{style:"currency",currency:cur}).format(amount);
-  }
-  function accDot(key){
-    return '<span class="dot" style="background:'+ACCOUNTS[key].color+'"></span>';
-  }
-  function chip(key){
-    return '<span class="chip">'+accDot(key)+ACCOUNTS[key].name+'</span>';
-  }
-  function getDC(e){
-    if(e.type==="custom") return { d:e.debtor, c:e.creditor };
-    const t = TYPES[e.type];
-    return { d:t.debtor, c:t.creditor };
-  }
+  function fmt(a){ return new Intl.NumberFormat("de-DE",{style:"currency",currency:CUR}).format(a); }
+  function dot(k){ return '<span class="dot" style="background:'+ACCOUNTS[k].color+'"></span>'; }
+  function getDC(e){ if(e.type==="custom") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
   function pairKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  /* ---------- Berechnung ---------- */
-  // pro Währung -> pro Konto-Paar -> Netto-Saldo
-  function balancesByCurrency(){
-    const res = {};
+  /* Salden pro Konto-Paar (eine Währung) */
+  function computeBalances(){
+    const map = {};
     entries.filter(e=>!e.settled).forEach(e=>{
-      const {d,c} = getDC(e);
-      if(!d || !c || d===c) return;
-      const amt = parseFloat(e.amount)||0;
-      if(amt<=0) return;
-      const cur = CUR;
-      res[cur] = res[cur] || {};
-      const key = pairKey(d,c);
-      const [a,b] = key.split("|");
-      res[cur][key] = res[cur][key] || { a, b, net:0 }; // net = wie viel a dem b schuldet
-      if(d===a) res[cur][key].net += amt;
-      else      res[cur][key].net -= amt;
+      const {d,c}=getDC(e); if(!d||!c||d===c) return;
+      const amt=parseFloat(e.amount)||0; if(amt<=0) return;
+      const key=pairKey(d,c); const [a,b]=key.split("|");
+      map[key]=map[key]||{a,b,net:0};
+      if(d===a) map[key].net+=amt; else map[key].net-=amt;
     });
-    return res;
+    return Object.values(map).filter(p=>Math.abs(p.net)>=0.005)
+      .map(p=> p.net>0 ? {from:p.a,to:p.b,amount:p.net} : {from:p.b,to:p.a,amount:-p.net})
+      .sort((x,y)=>y.amount-x.amount);
   }
 
-  // pro Währung -> pro Konto -> Netto (+ bekommt noch / – schuldet noch)
-  function accountNet(){
-    const res = {};
-    entries.filter(e=>!e.settled).forEach(e=>{
-      const {d,c} = getDC(e);
-      if(!d || !c || d===c) return;
-      const amt = parseFloat(e.amount)||0;
-      if(amt<=0) return;
-      const cur = CUR;
-      res[cur] = res[cur] || {};
-      res[cur][d] = (res[cur][d]||0) - amt;
-      res[cur][c] = (res[cur][c]||0) + amt;
-    });
-    return res;
-  }
-
-  /* ---------- Render: Salden ---------- */
   function renderBalances(){
-    const box = $("balances");
-    const data = balancesByCurrency();
-    const curs = ["EUR","USD"].filter(c=>data[c]);
-    let html = "";
-    let anyOpen = false;
-
-    curs.forEach(cur=>{
-      const pairs = Object.values(data[cur]).filter(p=>Math.abs(p.net) >= 0.005);
-      if(!pairs.length) return;
-      anyOpen = true;
-      html += '<div class="balance-group">';
-      pairs.sort((x,y)=>Math.abs(y.net)-Math.abs(x.net)).forEach(p=>{
-        const from = p.net>0 ? p.a : p.b;
-        const to   = p.net>0 ? p.b : p.a;
-        const val  = Math.abs(p.net);
-        html += '<div class="bcard">'
-          + '<div class="flow">'
-          +   '<span class="chip">'+accDot(from)+ACCOUNTS[from].name+'</span>'
-          +   '<span class="arrow">→</span>'
-          +   '<span class="chip">'+accDot(to)+ACCOUNTS[to].name+'</span>'
-          + '</div>'
-          + '<div class="amt">'+fmt(val,cur)+'</div>'
-          + '<div class="sub">'+ACCOUNTS[from].name+' schuldet '+ACCOUNTS[to].name+'</div>'
-          + '</div>';
-      });
-      html += '</div>';
-    });
-
-    if(!anyOpen){
+    const box=$("balances");
+    const bal=computeBalances();
+    if(!bal.length){
       box.innerHTML = entries.some(e=>!e.settled)
-        ? '<div class="all-clear">✓ Alles ausgeglichen – keine offenen Schulden.</div>'
-        : '<div class="empty">Noch keine Buchungen. Trag unten deine erste ein.</div>';
+        ? '<div class="all-clear">✓ Alles ausgeglichen</div>'
+        : '<div class="empty">Noch keine Buchungen.<br>Tippe unten auf +</div>';
       return;
     }
-    box.innerHTML = html;
+    box.innerHTML = bal.map(p=>
+      '<div class="bcard">'
+      + '<div class="flow">'
+      +   '<span class="chip">'+dot(p.from)+ACCOUNTS[p.from].name+'</span>'
+      +   '<span class="arrow">→</span>'
+      +   '<span class="chip">'+dot(p.to)+ACCOUNTS[p.to].name+'</span>'
+      + '</div>'
+      + '<div class="amt">'+fmt(p.amount)+'</div>'
+      + '<div class="sub">'+ACCOUNTS[p.from].name+' schuldet '+ACCOUNTS[p.to].name+'</div>'
+      + '</div>'
+    ).join("");
   }
 
-  /* ---------- Render: Konten-Übersicht ---------- */
-  function renderAccounts(){
-    const box = $("accounts");
-    const net = accountNet();
-    let html = "";
-    Object.keys(ACCOUNTS).forEach(key=>{
-      const parts = [];
-      ["EUR","USD"].forEach(cur=>{
-        const v = (net[cur] && net[cur][key]) ? net[cur][key] : 0;
-        if(Math.abs(v) < 0.005) return;
-        const cls = v>0 ? "pos" : "neg";
-        const sign = v>0 ? "+" : "";
-        const lbl = v>0 ? "bekommt" : "offen";
-        parts.push('<div class="v '+cls+'">'+sign+fmt(v,cur)+' <small>'+lbl+'</small></div>');
-      });
-      if(!parts.length) parts.push('<div class="v zero">ausgeglichen</div>');
-      html += '<div class="acc">'
-        + '<div class="name">'+accDot(key)+ACCOUNTS[key].name+'</div>'
-        + '<div class="vals">'+parts.join("")+'</div>'
-        + '</div>';
-    });
-    box.innerHTML = html;
-  }
-
-  /* ---------- Render: Buchungen ---------- */
   function renderEntries(){
-    const box = $("entries");
-    let list = entries.slice();
-    if(filter==="open")    list = list.filter(e=>!e.settled);
-    if(filter==="settled") list = list.filter(e=>e.settled);
-    list.sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.id-a.id));
-
-    if(!list.length){
-      box.innerHTML = '<div class="empty">Keine Buchungen in dieser Ansicht.</div>';
-      return;
-    }
-
+    const box=$("entries");
+    let list=entries.slice();
+    if(filter==="open")    list=list.filter(e=>!e.settled);
+    if(filter==="settled") list=list.filter(e=>e.settled);
+    list.sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id-a.id));
+    if(!list.length){ box.innerHTML='<div class="empty">Keine Buchungen in dieser Ansicht.</div>'; return; }
     box.innerHTML = list.map(e=>{
-      const {d,c} = getDC(e);
-      const t = TYPES[e.type] || {label:e.type};
-      const route = (d&&c)
-        ? accDot(d)+ACCOUNTS[d].short+' <span class="arrow">→</span> '+accDot(c)+ACCOUNTS[c].short
-        : '';
-      const dateStr = e.date ? new Date(e.date+"T00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"}) : "";
-      const note = e.note ? ' · '+escapeHtml(e.note) : "";
+      const {d,c}=getDC(e); const t=TYPES[e.type]||{label:e.type};
+      const route=(d&&c)? dot(d)+ACCOUNTS[d].short+' <span class="arrow">→</span> '+dot(c)+ACCOUNTS[c].short : '';
+      const dateStr=e.date? new Date(e.date+"T00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"}):"";
+      const note=e.note? ' · '+escapeHtml(e.note):"";
       return '<div class="entry'+(e.settled?" settled":"")+'" data-id="'+e.id+'">'
         + '<div class="check" data-act="toggle"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#06210c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
         + '<div class="info" data-act="edit">'
-        +   '<div class="top"><span class="ttype">'+t.label+'</span></div>'
+        +   '<div class="ttype">'+t.label+'</div>'
         +   (route?'<div class="route">'+route+'</div>':'')
         +   '<div class="meta">'+dateStr+note+'</div>'
         + '</div>'
-        + '<div class="right"><div class="eamt">'+fmt(parseFloat(e.amount)||0, CUR)+'</div></div>'
-        + '<button class="del" data-act="del" title="Löschen">✕</button>'
+        + '<div class="eamt">'+fmt(parseFloat(e.amount)||0)+'</div>'
         + '</div>';
     }).join("");
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
+  function renderAll(){ renderBalances(); renderEntries(); }
 
-  function renderAll(){ renderBalances(); renderAccounts(); renderEntries(); }
-
-  /* ---------- Formular ---------- */
-  function fillSelect(sel, withCustom){
-    sel.innerHTML = Object.keys(ACCOUNTS).map(k=>'<option value="'+k+'">'+ACCOUNTS[k].name+'</option>').join("");
-  }
-  function initForm(){
-    // Typen
-    $("f-type").innerHTML = Object.keys(TYPES).map(k=>'<option value="'+k+'">'+TYPES[k].label+'</option>').join("");
-    fillSelect($("f-debtor"));
-    fillSelect($("f-creditor"));
-    $("f-creditor").value = "at";
-    $("f-date").value = new Date().toISOString().slice(0,10);
-    onTypeChange();
+  /* ---- Modal (Add + Edit) ---- */
+  function fillSelect(sel){ sel.innerHTML=Object.keys(ACCOUNTS).map(k=>'<option value="'+k+'">'+ACCOUNTS[k].name+'</option>').join(""); }
+  function initModal(){
+    $("m-type").innerHTML=Object.keys(TYPES).map(k=>'<option value="'+k+'">'+TYPES[k].label+'</option>').join("");
+    fillSelect($("m-debtor")); fillSelect($("m-creditor"));
+    $("m-type").addEventListener("change", onTypeChange);
+    $("m-close").addEventListener("click", closeModal);
+    $("m-save").addEventListener("click", saveModal);
+    $("m-del").addEventListener("click", delModal);
+    $("modal").addEventListener("click", e=>{ if(e.target===$("modal")) closeModal(); });
   }
   function onTypeChange(){
-    const type = $("f-type").value;
-    const t = TYPES[type];
-    const hint = $("route-hint");
-    if(type==="custom"){
-      $("custom-fields").classList.remove("hidden");
-      hint.innerHTML = "Wähle Von &amp; An selbst.";
-    } else {
-      $("custom-fields").classList.add("hidden");
-      hint.innerHTML = accDot(t.debtor)+ACCOUNTS[t.debtor].name
-        +' <span class="arrow">→</span> '+accDot(t.creditor)+ACCOUNTS[t.creditor].name;
-    }
-  }
-
-  function addEntry(){
-    const type = $("f-type").value;
-    const amount = parseFloat(($("f-amount").value||"").replace(",","."));
-    if(!amount || amount<=0){ alert("Bitte einen gültigen Betrag eingeben."); return; }
-
-    let debtor=null, creditor=null;
-    if(type==="custom"){
-      debtor = $("f-debtor").value;
-      creditor = $("f-creditor").value;
-      if(debtor===creditor){ alert("Von und An dürfen nicht gleich sein."); return; }
-    }
-
-    entries.push({
-      id: Date.now(),
-      type, amount,
-      currency: CUR,
-      debtor, creditor,
-      date: $("f-date").value || new Date().toISOString().slice(0,10),
-      note: $("f-note").value.trim(),
-      settled: false
-    });
-    save();
-    // Reset (Datum & Typ behalten)
-    $("f-amount").value = "";
-    $("f-note").value = "";
-    renderAll();
-  }
-
-  /* ---------- Events ---------- */
-  $("f-type").addEventListener("change", onTypeChange);
-  $("add-btn").addEventListener("click", addEntry);
-
-  $("tabs").addEventListener("click", e=>{
-    const b = e.target.closest("button"); if(!b) return;
-    filter = b.dataset.filter;
-    document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active", x===b));
-    renderEntries();
-  });
-
-  $("entries").addEventListener("click", e=>{
-    const row = e.target.closest(".entry"); if(!row) return;
-    const id = Number(row.dataset.id);
-    const act = e.target.closest("[data-act]");
-    if(!act) return;
-    const idx = entries.findIndex(x=>x.id===id);
-    if(idx<0) return;
-    if(act.dataset.act==="toggle"){
-      entries[idx].settled = !entries[idx].settled;
-      if(entries[idx].settled) entries[idx].settledDate = new Date().toISOString().slice(0,10);
-      save(); renderAll();
-    } else if(act.dataset.act==="del"){
-      if(confirm("Diese Buchung löschen?")){ entries.splice(idx,1); save(); renderAll(); }
-    } else if(act.dataset.act==="edit"){
-      openEdit(id);
-    }
-  });
-
-  // Export
-  $("export-btn").addEventListener("click", ()=>{
-    const blob = new Blob([JSON.stringify(entries,null,2)],{type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "finanzen-backup-"+new Date().toISOString().slice(0,10)+".json";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-  // Import
-  $("import-btn").addEventListener("click", ()=>$("import-file").click());
-  $("import-file").addEventListener("change", e=>{
-    const file = e.target.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ev=>{
-      try{
-        const data = JSON.parse(ev.target.result);
-        if(!Array.isArray(data)) throw new Error("Falsches Format");
-        if(confirm("Backup importieren? Ersetzt die aktuellen Daten ("+entries.length+" Buchungen).")){
-          entries = data; save(); renderAll();
-          alert("Importiert: "+data.length+" Buchungen.");
-        }
-      }catch(err){ alert("Datei konnte nicht gelesen werden: "+err.message); }
-      $("import-file").value="";
-    };
-    reader.readAsText(file);
-  });
-  // Reset
-  $("reset-btn").addEventListener("click", ()=>{
-    if(confirm("Wirklich ALLE Buchungen löschen? (Mach vorher ein Backup!)")){
-      entries = []; save(); renderAll();
-    }
-  });
-
-  /* ---------- Bearbeiten (Modal) ---------- */
-  let editId = null;
-
-  function initModal(){
-    $("m-type").innerHTML = Object.keys(TYPES).map(k=>'<option value="'+k+'">'+TYPES[k].label+'</option>').join("");
-    fillSelect($("m-debtor"));
-    fillSelect($("m-creditor"));
-    $("m-type").addEventListener("change", onModalTypeChange);
-    $("m-close").addEventListener("click", closeEdit);
-    $("m-save").addEventListener("click", saveEdit);
-    $("modal").addEventListener("click", e=>{ if(e.target===$("modal")) closeEdit(); });
-  }
-  function onModalTypeChange(){
-    const type = $("m-type").value;
-    const t = TYPES[type];
-    const hint = $("m-route-hint");
+    const type=$("m-type").value, t=TYPES[type], hint=$("m-route-hint");
     if(type==="custom"){
       $("m-custom-fields").classList.remove("hidden");
-      hint.innerHTML = "Wähle Von &amp; An selbst.";
+      hint.innerHTML="Wähle Von &amp; An selbst.";
     } else {
       $("m-custom-fields").classList.add("hidden");
-      hint.innerHTML = accDot(t.debtor)+ACCOUNTS[t.debtor].name
-        +' <span class="arrow">→</span> '+accDot(t.creditor)+ACCOUNTS[t.creditor].name;
+      hint.innerHTML=dot(t.debtor)+ACCOUNTS[t.debtor].name+' <span class="arrow">→</span> '+dot(t.creditor)+ACCOUNTS[t.creditor].name;
     }
+  }
+  function openNew(){
+    editId=null;
+    $("m-title").textContent="Neue Buchung";
+    $("m-save").textContent="Hinzufügen";
+    $("m-del").classList.add("hidden");
+    $("m-type").value="fanvue";
+    $("m-debtor").value="mp"; $("m-creditor").value="ac";
+    $("m-amount").value=""; $("m-note").value="";
+    $("m-date").value=new Date().toISOString().slice(0,10);
+    onTypeChange();
+    $("modal").classList.remove("hidden");
+    setTimeout(()=>$("m-amount").focus(),250);
   }
   function openEdit(id){
-    const e = entries.find(x=>x.id===id);
-    if(!e) return;
-    editId = id;
-    $("m-type").value = e.type;
-    onModalTypeChange();
-    if(e.type==="custom"){
-      $("m-debtor").value = e.debtor || "mp";
-      $("m-creditor").value = e.creditor || "ac";
-    }
-    $("m-amount").value = e.amount;
-    $("m-date").value = e.date || new Date().toISOString().slice(0,10);
-    $("m-note").value = e.note || "";
+    const e=entries.find(x=>x.id===id); if(!e) return;
+    editId=id;
+    $("m-title").textContent="Buchung bearbeiten";
+    $("m-save").textContent="Speichern";
+    $("m-del").classList.remove("hidden");
+    $("m-type").value=e.type;
+    if(e.type==="custom"){ $("m-debtor").value=e.debtor||"mp"; $("m-creditor").value=e.creditor||"ac"; }
+    $("m-amount").value=e.amount;
+    $("m-date").value=e.date||new Date().toISOString().slice(0,10);
+    $("m-note").value=e.note||"";
+    onTypeChange();
     $("modal").classList.remove("hidden");
   }
-  function closeEdit(){ editId = null; $("modal").classList.add("hidden"); }
-  function saveEdit(){
-    const idx = entries.findIndex(x=>x.id===editId);
-    if(idx<0){ closeEdit(); return; }
-    const type = $("m-type").value;
-    const amount = parseFloat(($("m-amount").value||"").replace(",","."));
-    if(!amount || amount<=0){ alert("Bitte einen gültigen Betrag eingeben."); return; }
+  function closeModal(){ editId=null; $("modal").classList.add("hidden"); }
+  function saveModal(){
+    const type=$("m-type").value;
+    const amount=parseFloat(($("m-amount").value||"").replace(",","."));
+    if(!amount||amount<=0){ alert("Bitte einen gültigen Betrag eingeben."); return; }
     let debtor=null, creditor=null;
     if(type==="custom"){
-      debtor = $("m-debtor").value;
-      creditor = $("m-creditor").value;
+      debtor=$("m-debtor").value; creditor=$("m-creditor").value;
       if(debtor===creditor){ alert("Von und An dürfen nicht gleich sein."); return; }
     }
-    entries[idx].type = type;
-    entries[idx].amount = amount;
-    entries[idx].currency = CUR;
-    entries[idx].debtor = debtor;
-    entries[idx].creditor = creditor;
-    entries[idx].date = $("m-date").value || entries[idx].date;
-    entries[idx].note = $("m-note").value.trim();
-    save();
-    closeEdit();
-    renderAll();
+    if(editId===null){
+      entries.push({ id:Date.now(), type, amount, currency:CUR, debtor, creditor,
+        date:$("m-date").value||new Date().toISOString().slice(0,10), note:$("m-note").value.trim(), settled:false });
+    } else {
+      const e=entries.find(x=>x.id===editId); if(e){
+        e.type=type; e.amount=amount; e.currency=CUR; e.debtor=debtor; e.creditor=creditor;
+        e.date=$("m-date").value||e.date; e.note=$("m-note").value.trim();
+      }
+    }
+    save(); closeModal(); renderAll();
+  }
+  function delModal(){
+    if(editId===null) return;
+    if(confirm("Diese Buchung löschen?")){
+      const i=entries.findIndex(x=>x.id===editId);
+      if(i>=0) entries.splice(i,1);
+      save(); closeModal(); renderAll();
+    }
   }
 
-  /* ---------- Start ---------- */
-  initForm();
+  /* ---- Events ---- */
+  $("fab").addEventListener("click", openNew);
+  $("tabs").addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    filter=b.dataset.filter;
+    document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x===b));
+    renderEntries();
+  });
+  $("entries").addEventListener("click", e=>{
+    const row=e.target.closest(".entry"); if(!row) return;
+    const id=Number(row.dataset.id);
+    const act=e.target.closest("[data-act]"); if(!act) return;
+    if(act.dataset.act==="toggle"){
+      const en=entries.find(x=>x.id===id);
+      if(en){ en.settled=!en.settled; if(en.settled) en.settledDate=new Date().toISOString().slice(0,10); save(); renderAll(); }
+    } else if(act.dataset.act==="edit"){ openEdit(id); }
+  });
+
+  /* ---- Menü (Daten) ---- */
+  const menu=$("menu");
+  $("menu-btn").addEventListener("click", e=>{ e.stopPropagation(); menu.classList.toggle("hidden"); });
+  document.addEventListener("click", ()=>menu.classList.add("hidden"));
+  menu.addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    menu.classList.add("hidden");
+    if(b.dataset.m==="export"){
+      const blob=new Blob([JSON.stringify(entries,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob); const a=document.createElement("a");
+      a.href=url; a.download="finanzen-backup-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+      URL.revokeObjectURL(url);
+    } else if(b.dataset.m==="import"){ $("import-file").click(); }
+    else if(b.dataset.m==="reset"){
+      if(confirm("Wirklich ALLE Buchungen löschen? (Vorher Backup machen!)")){ entries=[]; save(); renderAll(); }
+    }
+  });
+  $("import-file").addEventListener("change", e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload=ev=>{ try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data)) throw new Error("Falsches Format");
+      if(confirm("Backup importieren? Ersetzt die aktuellen Daten ("+entries.length+" Buchungen).")){
+        entries=data; save(); renderAll(); alert("Importiert: "+data.length+" Buchungen.");
+      }
+    }catch(err){ alert("Datei konnte nicht gelesen werden: "+err.message); } $("import-file").value=""; };
+    r.readAsText(file);
+  });
+
+  /* ---- Start ---- */
   initModal();
   renderAll();
 })();
