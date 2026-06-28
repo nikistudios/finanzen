@@ -262,9 +262,9 @@
             <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
             <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
           </div>
-          <button onclick="App.settleBalance('${p.from}','${p.to}',${Math.round(p.amount*100)/100})" style="flex:none;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#C7CBFF;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#C7CBFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Beglichen
-          </button>
+          ${state.balanceMode==="pair" ? `<button onclick="App.settleBalance('${p.from}','${p.to}',${Math.round(p.amount*100)/100})" style="flex:none;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#C7CBFF;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#C7CBFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Erledigt
+          </button>` : ``}
         </div>
       </div>`).join("");
   }
@@ -309,7 +309,7 @@
       const isPay=e.type==="payment";
       const d = isPay ? e.from : getDC(e).d;
       const c = isPay ? e.to   : getDC(e).c;
-      const t = isPay ? {label:"✓ Begleichung"} : (TYPES[e.type]||{label:e.type});
+      const t = isPay ? {label:"✓ Erledigt"} : (TYPES[e.type]||{label:e.type});
       const dateStr=e.date? new Date(e.date+"T00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"}):"";
       const metaStr=esc(dateStr+(e.note? " · "+e.note:""));
       const checkBase="width:26px;height:26px;border-radius:50%;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;";
@@ -436,7 +436,7 @@
     setFilter(f){ state.filter=f; render(); },
     setBalMode(m){ state.balanceMode=m; render(); },
     settleBalance(from,to,amount){
-      if(confirm(`${ACCOUNTS[from].name} → ${ACCOUNTS[to].name}: ${fmt(amount)} als beglichen markieren?\n\nLegt eine Begleichung an (rückgängig durch Löschen in den Buchungen).`)){
+      if(confirm(`${ACCOUNTS[from].name} → ${ACCOUNTS[to].name}: ${fmt(amount)} als erledigt markieren?\n\nLegt eine Erledigung an (rückgängig durch Löschen in den Buchungen).`)){
         const entries=state.entries.slice();
         entries.push({ id:Date.now(), type:"payment", from, to, debtor:to, creditor:from,
           amount, currency:CUR, date:today(), note:"", settled:false });
@@ -448,7 +448,7 @@
       state.form={ type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; render(); },
     openEdit(id){ const e=state.entries.find(x=>x.id===id); if(!e) return;
       if(e.type==="payment"){
-        if(confirm("Diese Begleichung rückgängig machen (löschen)?")){
+        if(confirm("Diese Erledigung rückgängig machen (löschen)?")){
           persist(state.entries.filter(x=>x.id!==id));
         }
         return;
