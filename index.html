@@ -115,6 +115,13 @@
     return res.sort((a,b)=>b.amount-a.amount);
   }
 
+  // Sind zwei Überweisungs-Listen identisch? (für "schon optimal"-Hinweis)
+  function sameTransfers(a,b){
+    if(a.length!==b.length) return false;
+    const key=l=>l.map(p=>`${p.from}>${p.to}:${Math.round(p.amount*100)}`).sort().join("|");
+    return key(a)===key(b);
+  }
+
   /* ====== Render ====== */
   function render(){
     const bal=computeBalances();
@@ -233,13 +240,17 @@
   }
 
   function renderBalances(bal, hasOpen){
-    const list = state.balanceMode==="optimal" ? computeSettlement() : bal;
-    if(list.length>0){
-      const note = state.balanceMode==="optimal"
-        ? `<div style="font-size:11.5px;color:#5E6775;text-align:center;margin:4px 6px 0;line-height:1.5">⚡ So wenige Überweisungen wie möglich – alles über alle Konten verrechnet</div>`
-        : ``;
-      return balanceCards(list)+note;
+    if(state.balanceMode==="optimal"){
+      const opt=computeSettlement();
+      if(opt.length>0){
+        const note = sameTransfers(opt,bal)
+          ? `<div style="font-size:11.5px;color:#5E6775;text-align:center;margin:4px 6px 0;line-height:1.5">ℹ️ Schon optimal – deine Buchungen lassen sich nicht weiter zusammenfassen</div>`
+          : `<div style="font-size:11.5px;color:#5E6775;text-align:center;margin:4px 6px 0;line-height:1.5">⚡ So wenige Überweisungen wie möglich – alles über alle Konten verrechnet</div>`;
+        return balanceCards(opt)+note;
+      }
+      return hasOpen ? allClearCard() : balEmptyCard();
     }
+    if(bal.length>0) return balanceCards(bal);
     if(hasOpen) return allClearCard();
     return balEmptyCard();
   }
