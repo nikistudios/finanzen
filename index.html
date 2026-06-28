@@ -68,7 +68,7 @@
   function av(key,size){ const a=ACCOUNTS[key];
     return `width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex:none;background:linear-gradient(135deg,${a.color[0]},${a.color[1]});font-size:${Math.round(size*0.38)}px;letter-spacing:-.02em;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.3)`; }
   function dot(key){ const a=ACCOUNTS[key]; return `width:9px;height:9px;border-radius:50%;flex:none;background:linear-gradient(135deg,${a.color[0]},${a.color[1]})`; }
-  function getDC(e){ if(e.type==="custom") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
+  function getDC(e){ if(e.type==="custom"||e.type==="payment") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
   function pairKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
   function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
@@ -147,8 +147,12 @@
       }
     });
 
-    return Object.keys(t).filter(k=>t[k]>0.005)
-      .map(k=>{ const [from,to]=k.split(">"); return {from,to,amount:t[k]}; })
+    // gegenläufige Paare verrechnen (wichtig, wenn eine Begleichung eine Gegenrichtung erzeugt)
+    const net={};
+    Object.keys(t).forEach(k=>{ const [a,b]=k.split(">"); const lo=a<b?a:b, hi=a<b?b:a, pk=lo+"|"+hi;
+      net[pk]=net[pk]||{lo,hi,v:0}; net[pk].v += (a===lo ? t[k] : -t[k]); });
+    return Object.values(net).filter(o=>Math.abs(o.v)>0.005)
+      .map(o=> o.v>0 ? {from:o.lo,to:o.hi,amount:o.v} : {from:o.hi,to:o.lo,amount:-o.v})
       .sort((a,b)=>b.amount-a.amount);
   }
 
@@ -253,8 +257,15 @@
           <div style="${av(p.to,38)}">${ACCOUNTS[p.to].av}</div>
           <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.to].name}</span>
         </div>
-        <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;margin-top:13px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
-        <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:13px">
+          <div style="min-width:0">
+            <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
+            <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
+          </div>
+          <button onclick="App.settleBalance('${p.from}','${p.to}',${Math.round(p.amount*100)/100})" style="flex:none;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#C7CBFF;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#C7CBFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Beglichen
+          </button>
+        </div>
       </div>`).join("");
   }
 
@@ -295,13 +306,16 @@
       return `<div style="text-align:center;color:#5E6775;font-size:14px;padding:30px 16px;border:1px dashed rgba(255,255,255,.10);border-radius:20px">Keine Buchungen in dieser Ansicht.</div>`;
     }
     return list.map(e=>{
-      const {d,c}=getDC(e); const t=TYPES[e.type]||{label:e.type};
+      const isPay=e.type==="payment";
+      const d = isPay ? e.from : getDC(e).d;
+      const c = isPay ? e.to   : getDC(e).c;
+      const t = isPay ? {label:"✓ Begleichung"} : (TYPES[e.type]||{label:e.type});
       const dateStr=e.date? new Date(e.date+"T00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"}):"";
       const metaStr=esc(dateStr+(e.note? " · "+e.note:""));
       const checkBase="width:26px;height:26px;border-radius:50%;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;";
       const checkStyle=e.settled ? checkBase+"background:"+ACC_GRAD+";border:1px solid transparent" : checkBase+"background:transparent;border:2px solid #2B3340";
       const amtBase="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none;margin-left:8px;";
-      const amountStyle=e.settled ? amtBase+"text-decoration:line-through;color:#5E6775" : amtBase+"color:#F2F5F9";
+      const amountStyle=e.settled ? amtBase+"text-decoration:line-through;color:#5E6775" : amtBase+(isPay?"color:#8B8FE8":"color:#F2F5F9");
       const route=(d&&c) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;color:#97A1B0">
             <span style="${dot(d)}"></span><span>${ACCOUNTS[d].short}</span>
             <span style="color:#5E6775">→</span>
@@ -316,7 +330,7 @@
             ${route}
             <div style="font-size:11.5px;color:#5E6775;margin-top:3px">${metaStr}</div>
           </div>
-          <div style="${amountStyle}">${fmt(parseFloat(e.amount)||0)}</div>
+          <div style="${amountStyle}">${isPay?"−":""}${fmt(parseFloat(e.amount)||0)}</div>
         </div>`;
     }).join("");
   }
@@ -421,10 +435,24 @@
     closeMenu(){ state.menuOpen=false; render(); },
     setFilter(f){ state.filter=f; render(); },
     setBalMode(m){ state.balanceMode=m; render(); },
+    settleBalance(from,to,amount){
+      if(confirm(`${ACCOUNTS[from].name} → ${ACCOUNTS[to].name}: ${fmt(amount)} als beglichen markieren?\n\nLegt eine Begleichung an (rückgängig durch Löschen in den Buchungen).`)){
+        const entries=state.entries.slice();
+        entries.push({ id:Date.now(), type:"payment", from, to, debtor:to, creditor:from,
+          amount, currency:CUR, date:today(), note:"", settled:false });
+        persist(entries);
+      }
+    },
 
     openNew(){ state.modalOpen=true; state.editId=null; state.menuOpen=false; state.openDropdown=null;
       state.form={ type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; render(); },
     openEdit(id){ const e=state.entries.find(x=>x.id===id); if(!e) return;
+      if(e.type==="payment"){
+        if(confirm("Diese Begleichung rückgängig machen (löschen)?")){
+          persist(state.entries.filter(x=>x.id!==id));
+        }
+        return;
+      }
       state.modalOpen=true; state.editId=id; state.openDropdown=null;
       state.form={ type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac", amount:String(e.amount), date:e.date||today(), note:e.note||"" }; render(); },
     closeModal(){ state.modalOpen=false; state.editId=null; state.openDropdown=null; render(); },
