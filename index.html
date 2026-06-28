@@ -265,18 +265,9 @@
         </div>
       </div>
 
-      <div class="row">
-        <div class="field" style="flex:1.4">
-          <label>Betrag</label>
-          <input id="f-amount" type="number" inputmode="decimal" step="0.01" placeholder="0,00">
-        </div>
-        <div class="field">
-          <label>Währung</label>
-          <div class="seg" id="f-currency">
-            <button type="button" data-cur="EUR" class="active">EUR €</button>
-            <button type="button" data-cur="USD">USD $</button>
-          </div>
-        </div>
+      <div class="field">
+        <label>Betrag (USD)</label>
+        <input id="f-amount" type="number" inputmode="decimal" step="0.01" placeholder="0,00">
       </div>
 
       <div class="row">
@@ -344,18 +335,9 @@
         <select id="m-creditor"></select>
       </div>
     </div>
-    <div class="row">
-      <div class="field" style="flex:1.4">
-        <label>Betrag</label>
-        <input id="m-amount" type="number" inputmode="decimal" step="0.01" placeholder="0,00">
-      </div>
-      <div class="field">
-        <label>Währung</label>
-        <div class="seg" id="m-currency">
-          <button type="button" data-cur="EUR" class="active">EUR €</button>
-          <button type="button" data-cur="USD">USD $</button>
-        </div>
-      </div>
+    <div class="field">
+      <label>Betrag (USD)</label>
+      <input id="m-amount" type="number" inputmode="decimal" step="0.01" placeholder="0,00">
     </div>
     <div class="row">
       <div class="field">
@@ -385,19 +367,20 @@
 
   // Feste Geldflüsse: debtor schuldet creditor
   const TYPES = {
-    fanvue:  { label:"Fanvue Auszahlung",  debtor:"mg", creditor:"ac", cur:"USD" },
-    tiktokR: { label:"TikTok Rechnung",    debtor:"mg", creditor:"at", cur:"EUR" },
-    tiktokA: { label:"TikTok Auszahlung",  debtor:"mp", creditor:"at", cur:"EUR" },
-    auslage: { label:"Auslage für A&C",    debtor:"ac", creditor:"mp", cur:"EUR" },
-    custom:  { label:"Sonstige (manuell)", debtor:null, creditor:null, cur:"EUR" }
+    fanvue:  { label:"Fanvue Auszahlung",  debtor:"mg", creditor:"ac" },
+    tiktokR: { label:"TikTok Rechnung",    debtor:"mg", creditor:"at" },
+    tiktokA: { label:"TikTok Auszahlung",  debtor:"mp", creditor:"at" },
+    auslage: { label:"Auslage für A&C",    debtor:"ac", creditor:"mp" },
+    custom:  { label:"Sonstige (manuell)", debtor:null, creditor:null }
   };
+
+  const CUR = "USD"; // einzige Währung
 
   const STORE_KEY = "finanzen_v1";
 
   /* ---------- State ---------- */
   let entries = load();
   let filter = "open";
-  let formCur = "EUR";
 
   function load(){
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
@@ -433,7 +416,7 @@
       if(!d || !c || d===c) return;
       const amt = parseFloat(e.amount)||0;
       if(amt<=0) return;
-      const cur = e.currency;
+      const cur = CUR;
       res[cur] = res[cur] || {};
       const key = pairKey(d,c);
       const [a,b] = key.split("|");
@@ -452,7 +435,7 @@
       if(!d || !c || d===c) return;
       const amt = parseFloat(e.amount)||0;
       if(amt<=0) return;
-      const cur = e.currency;
+      const cur = CUR;
       res[cur] = res[cur] || {};
       res[cur][d] = (res[cur][d]||0) - amt;
       res[cur][c] = (res[cur][c]||0) + amt;
@@ -473,7 +456,6 @@
       if(!pairs.length) return;
       anyOpen = true;
       html += '<div class="balance-group">';
-      html += '<span class="cur-badge">'+cur+'</span>';
       pairs.sort((x,y)=>Math.abs(y.net)-Math.abs(x.net)).forEach(p=>{
         const from = p.net>0 ? p.a : p.b;
         const to   = p.net>0 ? p.b : p.a;
@@ -540,7 +522,6 @@
     box.innerHTML = list.map(e=>{
       const {d,c} = getDC(e);
       const t = TYPES[e.type] || {label:e.type};
-      const curTag = '<span class="tag '+e.currency.toLowerCase()+'">'+e.currency+'</span>';
       const route = (d&&c)
         ? accDot(d)+ACCOUNTS[d].short+' <span class="arrow">→</span> '+accDot(c)+ACCOUNTS[c].short
         : '';
@@ -549,11 +530,11 @@
       return '<div class="entry'+(e.settled?" settled":"")+'" data-id="'+e.id+'">'
         + '<div class="check" data-act="toggle"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4.5" stroke="#06210c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
         + '<div class="info" data-act="edit">'
-        +   '<div class="top"><span class="ttype">'+t.label+'</span>'+curTag+'</div>'
+        +   '<div class="top"><span class="ttype">'+t.label+'</span></div>'
         +   (route?'<div class="route">'+route+'</div>':'')
         +   '<div class="meta">'+dateStr+note+'</div>'
         + '</div>'
-        + '<div class="right"><div class="eamt">'+fmt(parseFloat(e.amount)||0, e.currency)+'</div></div>'
+        + '<div class="right"><div class="eamt">'+fmt(parseFloat(e.amount)||0, CUR)+'</div></div>'
         + '<button class="del" data-act="del" title="Löschen">✕</button>'
         + '</div>';
     }).join("");
@@ -589,14 +570,7 @@
       $("custom-fields").classList.add("hidden");
       hint.innerHTML = accDot(t.debtor)+ACCOUNTS[t.debtor].name
         +' <span class="arrow">→</span> '+accDot(t.creditor)+ACCOUNTS[t.creditor].name;
-      setCur(t.cur);
     }
-  }
-  function setCur(cur){
-    formCur = cur;
-    document.querySelectorAll("#f-currency button").forEach(b=>{
-      b.classList.toggle("active", b.dataset.cur===cur);
-    });
   }
 
   function addEntry(){
@@ -614,7 +588,7 @@
     entries.push({
       id: Date.now(),
       type, amount,
-      currency: formCur,
+      currency: CUR,
       debtor, creditor,
       date: $("f-date").value || new Date().toISOString().slice(0,10),
       note: $("f-note").value.trim(),
@@ -629,9 +603,6 @@
 
   /* ---------- Events ---------- */
   $("f-type").addEventListener("change", onTypeChange);
-  document.querySelectorAll("#f-currency button").forEach(b=>{
-    b.addEventListener("click", ()=>setCur(b.dataset.cur));
-  });
   $("add-btn").addEventListener("click", addEntry);
 
   $("tabs").addEventListener("click", e=>{
@@ -696,25 +667,17 @@
 
   /* ---------- Bearbeiten (Modal) ---------- */
   let editId = null;
-  let mCur = "EUR";
 
   function initModal(){
     $("m-type").innerHTML = Object.keys(TYPES).map(k=>'<option value="'+k+'">'+TYPES[k].label+'</option>').join("");
     fillSelect($("m-debtor"));
     fillSelect($("m-creditor"));
     $("m-type").addEventListener("change", onModalTypeChange);
-    document.querySelectorAll("#m-currency button").forEach(b=>{
-      b.addEventListener("click", ()=>setMCur(b.dataset.cur));
-    });
     $("m-close").addEventListener("click", closeEdit);
     $("m-save").addEventListener("click", saveEdit);
     $("modal").addEventListener("click", e=>{ if(e.target===$("modal")) closeEdit(); });
   }
-  function setMCur(cur){
-    mCur = cur;
-    document.querySelectorAll("#m-currency button").forEach(b=>b.classList.toggle("active", b.dataset.cur===cur));
-  }
-  function onModalTypeChange(setDefaultCur){
+  function onModalTypeChange(){
     const type = $("m-type").value;
     const t = TYPES[type];
     const hint = $("m-route-hint");
@@ -725,7 +688,6 @@
       $("m-custom-fields").classList.add("hidden");
       hint.innerHTML = accDot(t.debtor)+ACCOUNTS[t.debtor].name
         +' <span class="arrow">→</span> '+accDot(t.creditor)+ACCOUNTS[t.creditor].name;
-      if(setDefaultCur===true) setMCur(t.cur);
     }
   }
   function openEdit(id){
@@ -733,13 +695,12 @@
     if(!e) return;
     editId = id;
     $("m-type").value = e.type;
-    onModalTypeChange(false);
+    onModalTypeChange();
     if(e.type==="custom"){
       $("m-debtor").value = e.debtor || "mp";
       $("m-creditor").value = e.creditor || "ac";
     }
     $("m-amount").value = e.amount;
-    setMCur(e.currency);
     $("m-date").value = e.date || new Date().toISOString().slice(0,10);
     $("m-note").value = e.note || "";
     $("modal").classList.remove("hidden");
@@ -759,7 +720,7 @@
     }
     entries[idx].type = type;
     entries[idx].amount = amount;
-    entries[idx].currency = mCur;
+    entries[idx].currency = CUR;
     entries[idx].debtor = debtor;
     entries[idx].creditor = creditor;
     entries[idx].date = $("m-date").value || entries[idx].date;
