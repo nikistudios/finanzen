@@ -2,24 +2,220 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0B0C10">
+<meta name="apple-mobile-web-app-title" content="Finanzen">
+<meta name="theme-color" content="#0A0B0F">
+<meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex,nofollow">
 <title>Finanzen</title>
 <style>
+  :root{
+    --bg:#0A0B0F; --s1:#13151B; --s2:#1A1D25; --s3:#242834;
+    --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+    --text:#F3F5F8; --muted:#9AA3B2; --faint:#5F6878;
+    --acc:#6366F1; --acc2:#8B5CF6; --acc-soft:rgba(99,102,241,.14); --acc-line:rgba(99,102,241,.38); --acc-text:#C7CAFF;
+    --grad:linear-gradient(135deg,#6366F1,#8B5CF6);
+    --pos:#34D399; --neg:#FB7185; --danger:#FF5C5C;
+    --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+  }
   @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes sheetDown{from{transform:translateY(0)}to{transform:translateY(100%)}}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut{from{opacity:1}to{opacity:0}}
+  @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;background:#0B0C10}
+  html,body{background:var(--bg);color:var(--text)}
+  html.lock,html.lock body{overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
   ::-webkit-scrollbar{display:none}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:inherit}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   input::placeholder{color:#4A535F}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .num{font-variant-numeric:tabular-nums}
+
+  .wrap{max-width:440px;margin:0 auto;min-height:100vh;padding:0 16px calc(120px + var(--safe-b));position:relative}
+
+  /* Header */
+  .top{display:flex;align-items:flex-end;justify-content:space-between;padding:calc(var(--safe-t) + 22px) 2px 4px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.9px;color:var(--acc-text);text-transform:uppercase;opacity:.85}
+  .title{font-size:30px;font-weight:750;letter-spacing:-.7px;line-height:1.15;margin-top:2px}
+  .icon-btn{width:42px;height:42px;border-radius:13px;background:var(--s1);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+  .icon-btn:active{background:var(--s2)}
+  .menu-anchor{position:relative}
+  .menu{position:absolute;top:50px;right:0;z-index:40;background:var(--s2);border:1px solid var(--line2);border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.6);overflow:hidden;min-width:230px;animation:menuIn .16s ease;transform-origin:top right}
+  .menu button{display:flex;align-items:center;gap:12px;width:100%;font-size:15px;padding:14px 16px}
+  .menu button:active{background:var(--s3)}
+  .menu button+button{border-top:1px solid var(--line)}
+  .menu .danger{color:var(--danger)}
+  .menu-info{font-size:12px;color:var(--faint);padding:10px 16px 11px;border-top:1px solid var(--line);background:rgba(0,0,0,.15)}
+  .scrim{position:fixed;inset:0;z-index:35}
+
+  /* Hero */
+  .hero{position:relative;overflow:hidden;margin-top:16px;border-radius:26px;padding:22px 20px 18px;background:linear-gradient(155deg,#1D2030 0%,#14161E 60%);border:1px solid var(--line)}
+  .hero::before{content:"";position:absolute;top:-70px;right:-50px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.45),transparent 68%);filter:blur(14px);pointer-events:none}
+  .hero::after{content:"";position:absolute;bottom:-90px;left:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.18),transparent 70%);pointer-events:none}
+  .hero>*{position:relative;z-index:1}
+  .label{font-size:12px;font-weight:650;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+  .hero-amt{font-size:44px;font-weight:750;letter-spacing:-1.4px;line-height:1.1;margin-top:6px;color:#fff}
+  .hero-sub{font-size:13px;color:var(--muted);margin-top:4px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+  .stat{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:10px 12px}
+  .stat b{display:block;font-size:20px;font-weight:700;letter-spacing:-.4px}
+  .stat span{font-size:11.5px;color:var(--muted)}
+
+  /* Sections */
+  .section{margin-top:28px}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 12px;min-height:26px}
+  .sec-title{font-size:17px;font-weight:700;letter-spacing:-.3px}
+  .sec-hint{font-size:12.5px;color:var(--faint)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--acc-text);background:var(--acc-soft);border:1px solid var(--acc-line);border-radius:99px;padding:4px 8px 4px 10px}
+
+  /* Avatare */
+  .av{width:var(--s);height:var(--s);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none;font-weight:700;color:#fff;font-size:calc(var(--s) * .38);letter-spacing:-.02em;box-shadow:inset 0 1px 1px rgba(255,255,255,.3)}
+  .pair{display:inline-flex;flex:none}
+  .pair .av+.av{margin-left:-5px;box-shadow:0 0 0 2.5px var(--s1),inset 0 1px 1px rgba(255,255,255,.3)}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+
+  /* Personen */
+  .people{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px;scroll-padding:0 16px;scroll-snap-type:x proximity}
+  .person{flex:none;scroll-snap-align:start;width:104px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:12px 11px 11px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;transition:border-color .15s,background .15s}
+  .person:active{transform:scale(.98)}
+  .person.on{border-color:var(--acc);background:#171A27;box-shadow:0 0 0 1px var(--acc) inset}
+  .person-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .person-net{font-size:13.5px;font-weight:700;letter-spacing:-.2px;margin-top:-6px}
+  .person-state{font-size:11px;color:var(--faint);margin-top:-8px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .zero{color:var(--faint)}
+
+  /* Salden */
+  .card{background:var(--s1);border:1px solid var(--line);border-radius:20px}
+  .bal{padding:15px 16px 14px;margin-bottom:10px}
+  .bal-who{display:flex;align-items:center;gap:11px}
+  .bal-names{min-width:0;font-size:14px;font-weight:600;line-height:1.3}
+  .bal-names .arrow{color:var(--faint);font-weight:500;margin:0 3px}
+  .bal-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:12px}
+  .bal-amt{font-size:28px;font-weight:750;letter-spacing:-.7px;line-height:1.1;color:#fff}
+  .bal-meta{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .btn-soft{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--acc-soft);border:1px solid var(--acc-line);color:var(--acc-text);font-size:13px;font-weight:650;padding:9px 13px;border-radius:12px;white-space:nowrap}
+  .btn-soft:active{background:rgba(99,102,241,.24)}
+  .empty{text-align:center;color:var(--faint);font-size:14px;padding:32px 16px;border:1px dashed rgba(255,255,255,.1);border-radius:20px;line-height:1.7}
+  .clear{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:28px 16px;background:rgba(99,102,241,.09);border:1px solid rgba(99,102,241,.26);border-radius:20px}
+  .clear-ic{width:46px;height:46px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(99,102,241,.4)}
+  .clear b{font-size:15px;color:var(--acc-text)}
+  .clear span{font-size:13px;color:var(--muted);margin-top:-6px}
+
+  /* Buchungen */
+  .seg{display:flex;gap:4px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:14px}
+  .seg button{flex:1;text-align:center;padding:8px 0;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--muted);transition:background .2s,color .2s}
+  .seg button.on{background:var(--s3);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.35)}
+  .seg small{font-size:11.5px;font-weight:600;opacity:.6;margin-left:4px}
+  .month{display:flex;align-items:baseline;justify-content:space-between;margin:18px 4px 8px;font-size:12px;font-weight:650;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  .month:first-child{margin-top:4px}
+  .month span:last-child{text-transform:none;letter-spacing:0;font-weight:600;color:var(--faint)}
+  .list{background:var(--s1);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .entry{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 12px}
+  .entry+.entry{border-top:1px solid var(--line)}
+  .check{width:28px;height:28px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;border:2px solid #2E3542;transition:all .15s}
+  .check svg{opacity:0;transition:opacity .15s}
+  .check:active{transform:scale(.9)}
+  .entry.done .check{background:var(--grad);border-color:transparent}
+  .entry.done .check svg{opacity:1}
+  .entry-main{flex:1;min-width:0;display:block}
+  .entry-title{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .entry-route{display:flex;align-items:center;gap:5px;margin-top:3px;font-size:12px;color:var(--muted);white-space:nowrap}
+  .entry-route .arrow{color:var(--faint)}
+  .entry-note{font-size:12px;color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .entry-side{text-align:right;flex:none}
+  .entry-amt{font-size:16px;font-weight:700;white-space:nowrap}
+  .entry-date{font-size:11.5px;color:var(--faint);margin-top:2px;white-space:nowrap}
+  .entry.done .entry-title,.entry.done .entry-route,.entry.done .entry-amt{opacity:.45}
+  .entry.done .entry-amt{text-decoration:line-through}
+
+  .foot{font-size:11.5px;color:#4A535F;text-align:center;margin-top:26px;line-height:1.7;padding:0 8px}
+  .foot b{color:var(--faint);font-weight:600}
+  .foot .warn{color:#E0A458}
+
+  .fab{position:fixed;right:max(18px,calc(50% - 220px + 18px));bottom:calc(22px + var(--safe-b));z-index:25;width:60px;height:60px;border-radius:50%;background:var(--grad);box-shadow:0 10px 30px rgba(99,102,241,.45);display:flex;align-items:center;justify-content:center;transition:transform .15s}
+  .fab:active{transform:scale(.93)}
+
+  /* Sheet */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+  .overlay.enter{animation:fadeIn .2s ease}
+  .overlay.leave{animation:fadeOut .18s ease forwards}
+  .sheet{width:100%;max-width:440px;max-height:94vh;overflow-y:auto;overscroll-behavior:contain;background:#12141A;border:1px solid var(--line2);border-bottom:none;border-radius:28px 28px 0 0;padding:8px 18px calc(22px + var(--safe-b));box-shadow:0 -16px 50px rgba(0,0,0,.6)}
+  .overlay.enter .sheet{animation:sheetUp .28s cubic-bezier(.2,.9,.3,1)}
+  .overlay.leave .sheet{animation:sheetDown .18s ease forwards}
+  .grab{width:38px;height:5px;border-radius:99px;background:#2B3340;margin:4px auto 12px}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .sheet-head h2{font-size:20px;font-weight:700;letter-spacing:-.4px}
+  .x-btn{width:34px;height:34px;border-radius:11px;background:var(--s2);color:var(--muted);display:flex;align-items:center;justify-content:center}
+  .field{margin-bottom:16px}
+  .flabel{display:block;font-size:12px;font-weight:650;color:var(--muted);margin:0 0 7px 2px;letter-spacing:.2px}
+  .amount-box{display:flex;align-items:center;gap:6px;background:#0C0E13;border:1px solid #252B35;border-radius:16px;padding:6px 16px;transition:border-color .15s}
+  .amount-box:focus-within{border-color:var(--acc)}
+  .amount-box.err{border-color:var(--danger)}
+  .amount-box span{font-size:26px;font-weight:700;color:var(--faint)}
+  .amount-in{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font:inherit;font-size:32px;font-weight:750;letter-spacing:-.8px;padding:8px 0;font-variant-numeric:tabular-nums}
+  .amount-in:focus-visible{outline:none}
+  .err-text{color:var(--danger);font-size:12.5px;margin:7px 2px 0}
+  .opts{background:#0C0E13;border:1px solid #252B35;border-radius:16px;overflow:hidden}
+  .opt{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px}
+  .opt+.opt{border-top:1px solid var(--line)}
+  .opt.on{background:#161926}
+  .radio{width:20px;height:20px;border-radius:50%;border:2px solid #353C49;flex:none;display:flex;align-items:center;justify-content:center}
+  .opt.on .radio{border-color:var(--acc)}
+  .opt.on .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--acc)}
+  .opt-title{display:block;font-size:15px;font-weight:600}
+  .opt-route{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:2px}
+  .opt-route .arrow{color:var(--faint)}
+  .chooser{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .chip{display:flex;align-items:center;gap:7px;padding:8px 9px;border-radius:12px;background:#0C0E13;border:1px solid #252B35;font-size:13px;font-weight:600;min-width:0}
+  .chip span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip.on{border-color:var(--acc);background:#161926;box-shadow:0 0 0 1px var(--acc) inset}
+  .custom{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
+  .custom .flabel{margin-left:0}
+  .custom .field{margin-bottom:12px}
+  .custom .field:last-child{margin-bottom:0}
+  .swap{display:flex;justify-content:center;margin:-4px 0 8px}
+  .swap button{font-size:12px;font-weight:600;color:var(--acc-text);padding:4px 10px;border-radius:99px;background:var(--acc-soft)}
+  .inp{width:100%;display:block;background:#0C0E13;border:1px solid #252B35;color:var(--text);border-radius:14px;padding:13px 14px;font:inherit;font-size:16px;outline:none;min-height:50px;-webkit-appearance:none;appearance:none}
+  .inp:focus{border-color:var(--acc)}
+  input[type=date].inp::-webkit-date-and-time-value{text-align:left}
+  .grid2{display:grid;grid-template-columns:1fr 1.35fr;gap:10px}
+  .btn-primary{width:100%;background:var(--grad);color:#fff;border-radius:15px;padding:16px;font-size:16px;font-weight:700;text-align:center;box-shadow:0 8px 22px rgba(99,102,241,.35);margin-top:4px}
+  .btn-primary:active{transform:scale(.99);opacity:.92}
+  .row2{display:flex;gap:8px;margin-top:10px}
+  .btn-ghost{flex:1;text-align:center;padding:13px;border-radius:14px;background:var(--s2);font-size:14px;font-weight:600;color:var(--text)}
+  .btn-ghost.danger{color:var(--danger)}
+
+  /* Dialog */
+  .overlay.center{justify-content:center;padding:24px}
+  .dialog{width:100%;max-width:340px;background:var(--s2);border:1px solid var(--line2);border-radius:22px;padding:22px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .overlay.enter .dialog{animation:pop .2s ease}
+  .dialog h3{font-size:18px;font-weight:700;letter-spacing:-.3px}
+  .dialog p{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.55}
+  .dialog-btns{display:flex;gap:8px;margin-top:20px}
+  .dialog-btns button{flex:1;text-align:center;padding:13px;border-radius:13px;font-size:15px;font-weight:650;background:var(--s3)}
+  .dialog-btns .ok{background:var(--grad);color:#fff}
+  .dialog-btns .ok.danger{background:var(--danger)}
+
+  /* Toast */
+  .toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%);z-index:60;width:calc(100% - 32px);max-width:408px;display:flex;align-items:center;gap:12px;background:#22262F;border:1px solid var(--line2);border-radius:16px;padding:12px 12px 12px 16px;box-shadow:0 12px 36px rgba(0,0,0,.55);animation:toastIn .22s ease;font-size:14px}
+  .toast span{flex:1;min-width:0}
+  .toast button{flex:none;font-size:14px;font-weight:700;color:var(--acc-text);padding:6px 10px;border-radius:10px;background:var(--acc-soft)}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="sheet"></div>
+<div id="dialog"></div>
+<div id="toast"></div>
+<input type="file" id="import-file" accept="application/json,.json" style="display:none">
 
 <script>
 (function(){
@@ -43,375 +239,528 @@
     custom:  { label:"Sonstige (manuell)", debtor:null, creditor:null }
   };
   const CUR = "USD";
+  const CUR_SYMBOL = "$";
   const STORE_KEY = "finanzen_v1";
-  const ACCENT = ["#6366F1","#8B5CF6"];
-  const ACC_GRAD = `linear-gradient(135deg,${ACCENT[0]},${ACCENT[1]})`;
+  const BACKUP_KEY = "finanzen_last_backup";
+
+  /* ====== Speicher ====== */
+  function round2(n){ return Math.round(n*100)/100; }
+  function pad(n){ return String(n).padStart(2,"0"); }
+  // lokales Datum (nicht UTC – sonst kurz nach Mitternacht noch "gestern")
+  function today(){ const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+
+  // Bereinigt geladene/importierte Daten, damit kaputte oder alte Einträge die App nie zum Absturz bringen
+  function normalize(raw){
+    if(!Array.isArray(raw)) throw new Error("Die Datei enthält keine Buchungsliste.");
+    const out=[], seen=new Set(); let skipped=0, next=Date.now();
+    raw.forEach(e=>{
+      if(!e || typeof e!=="object" || !TYPES[e.type]){ skipped++; return; }  // u.a. alte "payment"-Gegenbuchungen
+      const amount=round2(parseFloat(e.amount));
+      if(!(amount>0)){ skipped++; return; }
+      let debtor=null, creditor=null;
+      if(e.type==="custom"){
+        debtor=e.debtor; creditor=e.creditor;
+        if(!ACCOUNTS[debtor] || !ACCOUNTS[creditor] || debtor===creditor){ skipped++; return; }
+      }
+      let id=Number(e.id);
+      if(!Number.isFinite(id) || seen.has(id)){ while(seen.has(next)) next++; id=next++; }
+      seen.add(id);
+      const entry={ id, type:e.type, amount, currency:CUR, debtor, creditor,
+        date:/^\d{4}-\d{2}-\d{2}$/.test(e.date) ? e.date : today(),
+        note:typeof e.note==="string" ? e.note : "", settled:!!e.settled };
+      if(entry.settled && e.settledDate) entry.settledDate=String(e.settledDate);
+      out.push(entry);
+    });
+    return { entries:out, skipped };
+  }
+
+  function load(){
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw) return [];
+    try{
+      const { entries, skipped }=normalize(JSON.parse(raw));
+      if(skipped) save(entries);
+      return entries;
+    }catch(e){
+      // unlesbare Daten nicht einfach überschreiben, sondern beiseitelegen
+      try{ localStorage.setItem(STORE_KEY+"_defekt_"+Date.now(), raw); }catch(_){}
+      return [];
+    }
+  }
+  function save(entries){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(entries)); return true; }
+    catch(e){ return false; }
+  }
+  function persist(entries){
+    state.entries=entries;
+    if(!save(entries)) showToast("Speichern fehlgeschlagen – bitte Backup exportieren!");
+    render();
+  }
+  function lastBackup(){ try{ return localStorage.getItem(BACKUP_KEY); }catch(e){ return null; } }
 
   /* ====== State ====== */
   const state = {
-    entries: load(),
-    filter: "open",
+    entries: [],
+    filter: "open",       // open | settled | all
+    person: null,         // Personen-Filter
     menuOpen: false,
-    modalOpen: false,
-    openDropdown: null,
-    editId: null,
-    form: { type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }
+    sheet: null,          // { id, form, error, enter, leaving }
+    dialog: null,         // { title, text, ok, danger, resolve, enter }
+    toast: null           // { msg, undo }
   };
-
-  function load(){ try{
-      let data=JSON.parse(localStorage.getItem(STORE_KEY))||[];
-      // alte Zahlungs-Gegenbuchungen entfernen – neues System nutzt den Erledigt-Haken direkt
-      const before=data.length;
-      data=data.filter(e=>e.type!=="payment");
-      if(data.length!==before) localStorage.setItem(STORE_KEY, JSON.stringify(data));
-      return data;
-    }catch(e){ return []; } }
-  function persist(entries){ state.entries=entries; localStorage.setItem(STORE_KEY, JSON.stringify(entries)); render(); }
-  function today(){ return new Date().toISOString().slice(0,10); }
+  state.entries=load();
 
   /* ====== Helpers ====== */
-  function fmt(a){ return new Intl.NumberFormat("de-DE",{style:"currency",currency:CUR}).format(a); }
-  function av(key,size){ const a=ACCOUNTS[key];
-    return `width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex:none;background:linear-gradient(135deg,${a.color[0]},${a.color[1]});font-size:${Math.round(size*0.38)}px;letter-spacing:-.02em;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.3)`; }
-  function dot(key){ const a=ACCOUNTS[key]; return `width:9px;height:9px;border-radius:50%;flex:none;background:linear-gradient(135deg,${a.color[0]},${a.color[1]})`; }
-  function getDC(e){ if(e.type==="custom") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
-  function pairKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
+  const NF=new Intl.NumberFormat("de-DE",{style:"currency",currency:CUR});
+  function fmt(a){ return NF.format(a); }
   function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function getDC(e){ if(e.type==="custom") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
+  function involves(e,p){ const {d,c}=getDC(e); return d===p || c===p; }
+  function pairKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
+  function parseDate(iso){ const [y,m,d]=iso.split("-").map(Number); return new Date(y,m-1,d); }
+  function dayLabel(iso){ return parseDate(iso).toLocaleDateString("de-DE",{day:"numeric",month:"short"}); }
+  function monthLabel(ym){ const [y,m]=ym.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString("de-DE",{month:"long",year:"numeric"}); }
+  function parseAmount(s){
+    s=String(s||"").trim().replace(/[\s$€]/g,"");
+    if(s.includes(",") && s.includes(".")){
+      s = s.lastIndexOf(",")>s.lastIndexOf(".") ? s.replace(/\./g,"").replace(",",".") : s.replace(/,/g,"");
+    } else s=s.replace(",",".");
+    if(!/^(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+    return round2(parseFloat(s));
+  }
+  function plural(n,one,many){ return n+" "+(n===1?one:many); }
 
-  function computeBalances(){
+  function avatar(key,size){ const a=ACCOUNTS[key];
+    return `<span class="av" style="--s:${size}px;background:linear-gradient(135deg,${a.color[0]},${a.color[1]})">${a.av}</span>`; }
+  function dot(key){ return `<i class="dot" style="background:${ACCOUNTS[key].color[1]}"></i>`; }
+  function route(d,c){ return `${dot(d)}<span>${esc(ACCOUNTS[d].short)}</span><span class="arrow">→</span>${dot(c)}<span>${esc(ACCOUNTS[c].short)}</span>`; }
+  const ICON = {
+    check:(c,w)=>`<svg width="${w||13}" height="${w||13}" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="${c||"#fff"}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    plus:`<svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+    more:`<svg width="20" height="20" viewBox="0 0 24 24" fill="#F3F5F8"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>`,
+    x:`<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+    down:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>`,
+    up:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V5M6 10l6-6 6 6M5 20h14"/></svg>`,
+    trash:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>`
+  };
+
+  /* ====== Berechnungen ====== */
+  function computeBalances(open){
     const map={};
-    state.entries.filter(e=>!e.settled).forEach(e=>{
+    open.forEach(e=>{
       const {d,c}=getDC(e); if(!d||!c||d===c) return;
-      const amt=parseFloat(e.amount)||0; if(amt<=0) return;
       const key=pairKey(d,c); const [a,b]=key.split("|");
-      map[key]=map[key]||{a,b,net:0};
-      if(d===a) map[key].net+=amt; else map[key].net-=amt;
+      map[key]=map[key]||{a,b,net:0,count:0};
+      map[key].net += d===a ? e.amount : -e.amount;
+      map[key].count++;
     });
     return Object.values(map).filter(p=>Math.abs(p.net)>=0.005)
-      .map(p=> p.net>0 ? {from:p.a,to:p.b,amount:p.net} : {from:p.b,to:p.a,amount:-p.net})
+      .map(p=> p.net>0 ? {from:p.a,to:p.b,amount:round2(p.net),count:p.count} : {from:p.b,to:p.a,amount:round2(-p.net),count:p.count})
       .sort((x,y)=>y.amount-x.amount);
+  }
+  // Netto je Person: positiv = bekommt Geld, negativ = schuldet
+  function personNets(open){
+    const nets={}; Object.keys(ACCOUNTS).forEach(k=>nets[k]=0);
+    open.forEach(e=>{ const {d,c}=getDC(e); nets[d]-=e.amount; nets[c]+=e.amount; });
+    Object.keys(nets).forEach(k=>nets[k]=round2(nets[k]));
+    return nets;
   }
 
   /* ====== Render ====== */
   function render(){
-    const bal=computeBalances();
-    const totalOpen=bal.reduce((s,p)=>s+p.amount,0);
-    const openEntryCount=state.entries.filter(e=>!e.settled).length;
-    const hasOpen=openEntryCount>0;
+    renderMain(); renderSheet(); renderDialog(); renderToast();
+    document.documentElement.classList.toggle("lock", !!(state.sheet || state.dialog));
+  }
+
+  function renderMain(){
+    const strip=document.querySelector(".people"); const stripScroll=strip?strip.scrollLeft:0;
+    renderMainHtml();
+    const strip2=document.querySelector(".people"); if(strip2) strip2.scrollLeft=stripScroll;
+  }
+
+  function renderMainHtml(){
+    const open=state.entries.filter(e=>!e.settled);
+    const bal=computeBalances(open);
+    const total=round2(bal.reduce((s,p)=>s+p.amount,0));
+    const nets=personNets(open);
+    const P=state.person;
+    const scoped=P ? state.entries.filter(e=>involves(e,P)) : state.entries;
+    const scopedOpen=scoped.filter(e=>!e.settled);
+    const balShown=P ? bal.filter(b=>b.from===P||b.to===P) : bal;
+    const settledCount=state.entries.length-open.length;
+    const lb=lastBackup();
+    const backupDays=lb ? Math.floor((parseDate(today())-parseDate(lb))/864e5) : null;
+
+    const heroSub = !state.entries.length ? "Noch nichts erfasst"
+      : total>0 ? `über ${plural(bal.length,"offenen Saldo","offene Salden")}` : "Alles ausgeglichen";
 
     document.getElementById("app").innerHTML = `
-    <div style="max-width:430px;margin:0 auto;min-height:100vh;background:#0B0C10;color:#F2F5F9;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;position:relative;padding:0 0 120px;overflow:hidden">
-
-      <header style="display:flex;align-items:flex-start;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 24px) 18px 6px">
+    <div class="wrap">
+      <header class="top">
         <div>
-          <div style="font-size:13px;font-weight:600;color:${ACCENT[0]};letter-spacing:.3px">SETTLE·UP</div>
-          <h1 style="font-size:28px;font-weight:700;letter-spacing:-.6px;margin:2px 0 0">Finanzen</h1>
+          <div class="eyebrow">Settle · Up</div>
+          <h1 class="title">Finanzen</h1>
         </div>
-        <div style="position:relative">
-          <button onclick="App.toggleMenu(event)" aria-label="Menü" style="width:42px;height:42px;border-radius:13px;background:#15181F;border:1px solid rgba(255,255,255,.07);color:#F2F5F9;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">⋯</button>
+        <div class="menu-anchor">
+          <button class="icon-btn" onclick="App.toggleMenu(event)" aria-label="Menü" aria-expanded="${state.menuOpen}">${ICON.more}</button>
           ${state.menuOpen ? `
-          <div style="position:absolute;top:50px;right:0;z-index:40;background:#1A1E27;border:1px solid rgba(255,255,255,.09);border-radius:15px;box-shadow:0 12px 40px rgba(0,0,0,.55);overflow:hidden;min-width:212px">
-            <button onclick="App.doExport()" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;color:#F2F5F9;font-size:15px;padding:14px 16px;cursor:pointer;font-family:inherit">↓&nbsp; Backup exportieren</button>
-            <button onclick="App.triggerImport()" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;color:#F2F5F9;font-size:15px;padding:14px 16px;cursor:pointer;font-family:inherit">↑&nbsp; Backup importieren</button>
-            <button onclick="App.doReset()" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;color:#FF5C5C;font-size:15px;padding:14px 16px;cursor:pointer;font-family:inherit;border-top:1px solid rgba(255,255,255,.07)">⌫&nbsp; Alles löschen</button>
+          <div class="menu" role="menu">
+            <button onclick="App.doExport()" role="menuitem">${ICON.down} Backup exportieren</button>
+            <button onclick="App.triggerImport()" role="menuitem">${ICON.up} Backup importieren</button>
+            <button class="danger" onclick="App.doReset()" role="menuitem">${ICON.trash} Alles löschen</button>
+            <div class="menu-info">${plural(state.entries.length,"Buchung","Buchungen")} gespeichert<br>Letztes Backup: ${lb ? dayLabel(lb)+" "+lb.slice(0,4) : "noch keins"}</div>
           </div>` : ``}
         </div>
       </header>
+      ${state.menuOpen ? `<div class="scrim" onclick="App.closeMenu()"></div>` : ``}
 
-      ${state.menuOpen ? `<div onclick="App.closeMenu()" style="position:fixed;inset:0;z-index:35"></div>` : ``}
-
-      <div style="padding:0 18px">
-
-        <div style="position:relative;overflow:hidden;background:linear-gradient(160deg,#1A1E2B,#13151C);border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:22px 22px 20px;margin-top:14px">
-          <div style="position:absolute;top:-50px;right:-40px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,${ACCENT[0]}55,transparent 70%);filter:blur(18px);pointer-events:none"></div>
-          <div style="position:relative">
-            <div style="font-size:12px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#97A1B0">Offen gesamt</div>
-            <div style="font-size:42px;font-weight:700;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;margin-top:4px;color:#fff">${fmt(totalOpen)}</div>
-            <div style="display:flex;gap:8px;margin-top:16px">
-              <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:11px 13px">
-                <div style="font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px">${bal.length}</div>
-                <div style="font-size:11.5px;color:#97A1B0;margin-top:1px">offene Salden</div>
-              </div>
-              <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:11px 13px">
-                <div style="font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px">${openEntryCount}</div>
-                <div style="font-size:11.5px;color:#97A1B0;margin-top:1px">offene Buchungen</div>
-              </div>
-            </div>
-          </div>
+      <section class="hero">
+        <div class="label">Offen gesamt</div>
+        <div class="hero-amt num">${fmt(total)}</div>
+        <div class="hero-sub">${heroSub}</div>
+        <div class="stats">
+          <div class="stat"><b class="num">${bal.length}</b><span>Salden</span></div>
+          <div class="stat"><b class="num">${open.length}</b><span>offen</span></div>
+          <div class="stat"><b class="num">${settledCount}</b><span>erledigt</span></div>
         </div>
+      </section>
 
-        <div style="margin-top:26px">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 12px">
-            <div style="font-size:13px;font-weight:700;letter-spacing:-.1px">Salden</div>
-            <div style="font-size:12px;color:#5E6775">wer schuldet wem</div>
-          </div>
-          ${renderBalances(bal, hasOpen)}
+      ${state.entries.length ? `
+      <section class="section">
+        <div class="sec-head">
+          <div class="sec-title">Personen</div>
+          <div class="sec-hint">${P ? `<button class="pill" onclick="App.setPerson(null)">${esc(ACCOUNTS[P].short)} ${ICON.x}</button>` : "antippen zum Filtern"}</div>
         </div>
+        <div class="people">${Object.keys(ACCOUNTS).map(k=>personChip(k,nets[k])).join("")}</div>
+      </section>` : ``}
 
-        <div style="margin-top:28px">
-          <div style="font-size:13px;font-weight:700;letter-spacing:-.1px;margin:0 4px 12px">Buchungen</div>
-          <div style="display:flex;gap:4px;background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:4px;margin-bottom:14px">
-            ${tabBtn("open","Offen")}${tabBtn("settled","Erledigt")}${tabBtn("all","Alle")}
-          </div>
-          ${renderEntries()}
+      <section class="section">
+        <div class="sec-head">
+          <div class="sec-title">Salden</div>
+          <div class="sec-hint">wer schuldet wem</div>
         </div>
+        ${balShown.length ? balShown.map(balanceCard).join("")
+          : scoped.length ? clearCard()
+          : `<div class="empty">Noch keine Buchungen${P?" für "+esc(ACCOUNTS[P].name):""}.<br>Tippe unten auf <b style="color:var(--acc-text)">+</b></div>`}
+      </section>
 
-        <p style="font-size:11.5px;color:#4A535F;text-align:center;margin-top:22px;line-height:1.6;padding:0 8px">Daten bleiben nur auf diesem Gerät. Am iPhone: Safari → Teilen → „Zum Home-Bildschirm".<br>Geräte syncen nicht – per ⋯-Menü exportieren/importieren.</p>
-      </div>
+      <section class="section">
+        <div class="sec-head"><div class="sec-title">Buchungen</div>${P?`<div class="sec-hint">nur ${esc(ACCOUNTS[P].short)}</div>`:""}</div>
+        <div class="seg" role="tablist">
+          ${segBtn("open","Offen",scopedOpen.length)}${segBtn("settled","Erledigt",scoped.length-scopedOpen.length)}${segBtn("all","Alle",scoped.length)}
+        </div>
+        ${renderEntries(scoped)}
+      </section>
 
-      <button onclick="App.openNew()" aria-label="Neue Buchung" style="position:fixed;right:max(20px,calc(50% - 215px + 20px));bottom:calc(24px + env(safe-area-inset-bottom));z-index:25;width:60px;height:60px;border-radius:50%;border:none;background:${ACC_GRAD};cursor:pointer;box-shadow:0 10px 30px ${ACCENT[0]}66;display:flex;align-items:center;justify-content:center">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"></path></svg>
-      </button>
+      <p class="foot">Daten bleiben nur auf diesem Gerät – regelmäßig über ⋯ ein Backup exportieren.<br>
+        ${state.entries.length ? (lb ? `<b class="${backupDays>14?"warn":""}">Letztes Backup: ${backupDays===0?"heute":backupDays===1?"gestern":"vor "+backupDays+" Tagen"}</b>` : `<b class="warn">Noch kein Backup gemacht</b>`) : `iPhone: Safari → Teilen → „Zum Home-Bildschirm“`}</p>
 
-      <input type="file" id="import-file" accept="application/json" onchange="App.onImportFile(this)" style="display:none">
-
-      ${state.modalOpen ? renderModal() : ``}
+      <button class="fab" onclick="App.openNew()" aria-label="Neue Buchung">${ICON.plus}</button>
     </div>`;
   }
 
-  function tabBtn(key,label){
-    const base="flex:1;text-align:center;padding:9px 0;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;background:transparent;color:#97A1B0";
-    const active="flex:1;text-align:center;padding:9px 0;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;background:#262B36;color:#F2F5F9;box-shadow:0 1px 3px rgba(0,0,0,.35)";
-    return `<button onclick="App.setFilter('${key}')" style="${state.filter===key?active:base}">${label}</button>`;
+  function personChip(k,net){
+    const a=ACCOUNTS[k];
+    const cls=net>0?"pos":net<0?"neg":"zero";
+    const txt=net===0?"±0":(net>0?"+":"−")+fmt(Math.abs(net));
+    const st=net>0?"bekommt":net<0?"schuldet":"ausgeglichen";
+    return `<button class="person ${state.person===k?"on":""}" onclick="App.setPerson('${k}')" aria-pressed="${state.person===k}">
+        ${avatar(k,30)}
+        <span class="person-name">${esc(a.short)}</span>
+        <span class="person-net num ${cls}">${txt}</span>
+        <span class="person-state">${st}</span>
+      </button>`;
   }
 
-
-  function balanceCards(list){
-    return list.map(p=>`
-      <div style="background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:16px 17px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-          <div style="${av(p.from,38)}">${ACCOUNTS[p.from].av}</div>
-          <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.from].name}</span>
-          <span style="color:#5E6775;font-size:17px;margin:0 1px">→</span>
-          <div style="${av(p.to,38)}">${ACCOUNTS[p.to].av}</div>
-          <span style="font-size:14px;font-weight:600;color:#F2F5F9">${ACCOUNTS[p.to].name}</span>
+  function balanceCard(p){
+    return `<div class="card bal">
+        <div class="bal-who">
+          <span class="pair">${avatar(p.from,36)}${avatar(p.to,36)}</span>
+          <div class="bal-names">${esc(ACCOUNTS[p.from].name)}<span class="arrow">→</span>${esc(ACCOUNTS[p.to].name)}</div>
         </div>
-        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:13px">
+        <div class="bal-bottom">
           <div style="min-width:0">
-            <div style="font-size:27px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums;color:#fff">${fmt(p.amount)}</div>
-            <div style="font-size:12.5px;color:#97A1B0;margin-top:2px">${ACCOUNTS[p.from].name} schuldet ${ACCOUNTS[p.to].name}</div>
+            <div class="bal-amt num">${fmt(p.amount)}</div>
+            <div class="bal-meta">${esc(ACCOUNTS[p.from].short)} schuldet ${esc(ACCOUNTS[p.to].short)} · ${plural(p.count,"Buchung","Buchungen")}</div>
           </div>
-          <button onclick="App.settleBalance('${p.from}','${p.to}')" style="flex:none;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#C7CBFF;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#C7CBFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Erledigt
-          </button>
+          <button class="btn-soft" onclick="App.settleBalance('${p.from}','${p.to}')">${ICON.check("#C7CAFF")}Erledigt</button>
         </div>
-      </div>`).join("");
+      </div>`;
   }
 
-  function allClearCard(){
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:30px 16px;background:rgba(99,102,241,.10);border:1px solid rgba(99,102,241,.28);border-radius:20px">
-      <div style="width:46px;height:46px;border-radius:50%;background:${ACC_GRAD};display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.2 3.2L13 4.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
-      <div style="font-size:15px;font-weight:600;color:#C7CBFF">Alles ausgeglichen</div>
-    </div>`;
+  function clearCard(){
+    return `<div class="clear"><div class="clear-ic">${ICON.check("#fff",22)}</div><b>Alles ausgeglichen</b><span>Niemand schuldet gerade jemandem etwas.</span></div>`;
   }
 
-  function balEmptyCard(){
-    return `<div style="text-align:center;color:#5E6775;font-size:14px;padding:34px 16px;border:1px dashed rgba(255,255,255,.10);border-radius:20px;line-height:1.7">Noch keine Buchungen.<br>Tippe unten auf <span style="color:#8B8FE8;font-weight:700">+</span></div>`;
+  function segBtn(key,label,n){
+    return `<button class="${state.filter===key?"on":""}" role="tab" aria-selected="${state.filter===key}" onclick="App.setFilter('${key}')">${label}<small class="num">${n}</small></button>`;
   }
 
-  function renderBalances(bal, hasOpen){
-    if(bal.length>0) return balanceCards(bal);
-    if(hasOpen) return allClearCard();
-    return balEmptyCard();
-  }
-
-  function renderEntries(){
-    let list=state.entries.slice();
+  function renderEntries(scoped){
+    let list=scoped;
     if(state.filter==="open") list=list.filter(e=>!e.settled);
     if(state.filter==="settled") list=list.filter(e=>e.settled);
-    list.sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.id-a.id));
+    list=list.slice().sort((a,b)=>b.date.localeCompare(a.date)||(b.id-a.id));
     if(!list.length){
-      return `<div style="text-align:center;color:#5E6775;font-size:14px;padding:30px 16px;border:1px dashed rgba(255,255,255,.10);border-radius:20px">Keine Buchungen in dieser Ansicht.</div>`;
+      const msg = state.filter==="open" && scoped.length ? "Keine offenen Buchungen – alles erledigt."
+        : state.filter==="settled" ? "Noch nichts erledigt." : "Keine Buchungen in dieser Ansicht.";
+      return `<div class="empty">${msg}</div>`;
     }
-    return list.map(e=>{
-      const {d,c}=getDC(e);
-      const t = TYPES[e.type]||{label:e.type};
-      const dateStr=e.date? new Date(e.date+"T00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"}):"";
-      const metaStr=esc(dateStr+(e.note? " · "+e.note:""));
-      const checkBase="width:26px;height:26px;border-radius:50%;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;";
-      const checkStyle=e.settled ? checkBase+"background:"+ACC_GRAD+";border:1px solid transparent" : checkBase+"background:transparent;border:2px solid #2B3340";
-      const amtBase="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none;margin-left:8px;";
-      const amountStyle=e.settled ? amtBase+"text-decoration:line-through;color:#5E6775" : amtBase+"color:#F2F5F9";
-      const route=(d&&c) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;color:#97A1B0">
-            <span style="${dot(d)}"></span><span>${ACCOUNTS[d].short}</span>
-            <span style="color:#5E6775">→</span>
-            <span style="${dot(c)}"></span><span>${ACCOUNTS[c].short}</span>
-          </div>` : ``;
-      return `<div style="display:flex;align-items:center;gap:12px;padding:13px 14px;background:#15181F;border:1px solid rgba(255,255,255,.06);border-radius:16px;margin-bottom:8px;transition:opacity .15s;opacity:${e.settled?"0.5":"1"}">
-          <button onclick="App.toggleSettle(${e.id})" aria-label="erledigt" style="${checkStyle}">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:${e.settled?"1":"0"}"><path d="M3 8l3.2 3.2L13 4.6" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          </button>
-          <div onclick="App.openEdit(${e.id})" style="flex:1;min-width:0;cursor:pointer">
-            <div style="font-size:15px;font-weight:600;color:#F2F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.label)}</div>
-            ${route}
-            <div style="font-size:11.5px;color:#5E6775;margin-top:3px">${metaStr}</div>
-          </div>
-          <div style="${amountStyle}">${fmt(parseFloat(e.amount)||0)}</div>
-        </div>`;
-    }).join("");
+    const groups=[];
+    list.forEach(e=>{ const m=e.date.slice(0,7); let g=groups[groups.length-1];
+      if(!g||g.m!==m){ g={m,items:[],sum:0}; groups.push(g); } g.items.push(e); g.sum+=e.amount; });
+    return groups.map(g=>`
+      <div class="month"><span>${monthLabel(g.m)}</span><span class="num">${fmt(round2(g.sum))}</span></div>
+      <div class="list">${g.items.map(entryRow).join("")}</div>`).join("");
   }
 
-  function selStyle(){
-    return "width:100%;background:#0E1116;border:1px solid #242A33;color:#F2F5F9;border-radius:12px;padding:13px 34px 13px 14px;font-size:16px;font-family:inherit;outline:none;appearance:none;-webkit-appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2397A1B0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 13px center";
-  }
-  function inpStyle(big){
-    return `width:100%;background:#0E1116;border:1px solid #242A33;color:#F2F5F9;border-radius:12px;padding:${big?"14px 14px":"13px 14px"};font-size:${big?"22px":"15px"};${big?"font-weight:700;font-variant-numeric:tabular-nums;":""}font-family:inherit;outline:none`;
-  }
-  function lblStyle(){ return "display:block;font-size:12px;color:#97A1B0;margin:0 0 6px 2px;font-weight:600"; }
-
-  // Eigenes Dropdown (statt nativem <select>, das auf iOS unlesbar wird)
-  function dropdown(id, sel, opts){
-    const cur=opts.find(o=>o.value===sel);
-    const open=state.openDropdown===id;
-    const trigger=`<div onclick="App.toggleDropdown('${id}')" style="width:100%;background:#0E1116;border:1px solid ${open?"#3A3F4D":"#242A33"};color:#F2F5F9;border-radius:12px;padding:13px 14px;font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">
-        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cur?esc(cur.label):"—"}</span>
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="#97A1B0" style="flex:none;transition:transform .2s;transform:rotate(${open?"180":"0"}deg)"><path d="M8 11L3 6h10z"/></svg>
+  function entryRow(e){
+    const {d,c}=getDC(e);
+    return `<div class="entry ${e.settled?"done":""}">
+        <button class="check" onclick="App.toggleSettle(${e.id})" aria-label="${e.settled?"Als offen markieren":"Als erledigt markieren"}" aria-pressed="${e.settled}">${ICON.check()}</button>
+        <button class="entry-main" onclick="App.openEdit(${e.id})">
+          <div class="entry-title">${esc(TYPES[e.type].label)}</div>
+          <div class="entry-route">${route(d,c)}</div>
+          ${e.note?`<div class="entry-note">${esc(e.note)}</div>`:""}
+        </button>
+        <div class="entry-side">
+          <div class="entry-amt num">${fmt(e.amount)}</div>
+          <div class="entry-date">${dayLabel(e.date)}</div>
+        </div>
       </div>`;
-    const list=open?`<div style="margin-top:6px;background:#0E1116;border:1px solid #242A33;border-radius:12px;overflow:hidden">
-        ${opts.map((o,i)=>`<div onclick="App.selectDropdown('${id}','${o.value}')" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;font-size:15px;color:#F2F5F9;cursor:pointer;${i>0?"border-top:1px solid rgba(255,255,255,.05);":""}${o.value===sel?"background:#1A1E27;":""}">
-            <span>${esc(o.label)}</span>
-            ${o.value===sel?`<svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8l3.2 3.2L13 4.6" stroke="${ACCENT[0]}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`:""}
-          </div>`).join("")}
-      </div>`:``;
-    return trigger+list;
   }
 
-  function renderModal(){
-    const f=state.form;
-    const isCustom=f.type==="custom";
-    const tm=TYPES[f.type];
-    const hintD=isCustom?null:(tm?tm.debtor:null);
-    const hintC=isCustom?null:(tm?tm.creditor:null);
-    const isEdit=state.editId!==null;
+  /* ---- Sheet (Neue Buchung / Bearbeiten) ---- */
+  function renderSheet(){
+    const host=document.getElementById("sheet");
+    const s=state.sheet;
+    if(!s){ host.innerHTML=""; return; }
+    const prev=host.querySelector(".sheet"); const scroll=prev?prev.scrollTop:0;
+    const f=s.form, isEdit=s.id!==null, isCustom=f.type==="custom";
+    const entry=isEdit ? state.entries.find(x=>x.id===s.id) : null;
 
-    const typeOptions=Object.keys(TYPES).map(k=>({value:k,label:TYPES[k].label}));
-    const accountOptions=Object.keys(ACCOUNTS).map(k=>({value:k,label:ACCOUNTS[k].name}));
+    const typeOpts=Object.keys(TYPES).map(k=>{
+      const t=TYPES[k];
+      return `<button class="opt ${f.type===k?"on":""}" onclick="App.setType('${k}')" role="radio" aria-checked="${f.type===k}">
+          <span class="radio"></span>
+          <span style="min-width:0"><span class="opt-title">${esc(t.label)}</span>
+          <span class="opt-route">${t.debtor ? route(t.debtor,t.creditor) : "Von und An selbst wählen"}</span></span>
+        </button>`;
+    }).join("");
 
-    const customFields=isCustom ? `
-      <div style="display:flex;gap:10px;margin-bottom:14px">
-        <div style="flex:1;min-width:0">
-          <label style="${lblStyle()}">Von (schuldet)</label>
-          ${dropdown('debtor',f.debtor,accountOptions)}
-        </div>
-        <div style="flex:1;min-width:0">
-          <label style="${lblStyle()}">An (bekommt)</label>
-          ${dropdown('creditor',f.creditor,accountOptions)}
-        </div>
+    const chooser=(field)=>`<div class="chooser" role="radiogroup">${Object.keys(ACCOUNTS).map(k=>
+      `<button class="chip ${f[field]===k?"on":""}" onclick="App.pickAccount('${field}','${k}')" role="radio" aria-checked="${f[field]===k}">${avatar(k,22)}<span>${esc(ACCOUNTS[k].short)}</span></button>`).join("")}</div>`;
+
+    const custom=isCustom ? `
+      <div class="custom">
+        <div class="field"><label class="flabel">Von – schuldet</label>${chooser("debtor")}</div>
+        <div class="swap"><button onclick="App.swapAccounts()">⇅ tauschen</button></div>
+        <div class="field"><label class="flabel">An – bekommt</label>${chooser("creditor")}</div>
       </div>` : ``;
 
-    const routeHint=(!isCustom && hintD && hintC) ? `
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#97A1B0;margin:-2px 2px 14px">
-        <div style="${av(hintD,24)}">${ACCOUNTS[hintD].av}</div><span>${ACCOUNTS[hintD].name}</span>
-        <span style="color:#5E6775">→</span>
-        <div style="${av(hintC,24)}">${ACCOUNTS[hintC].av}</div><span>${ACCOUNTS[hintC].name}</span>
-      </div>` : ``;
-
-    const delBtn=isEdit ? `<button onclick="App.delModal()" style="width:100%;background:none;color:#FF5C5C;border:none;padding:13px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit">Buchung löschen</button>` : ``;
-
-    return `
-    <div onclick="App.closeIfOverlay(event)" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;backdrop-filter:blur(3px)">
-      <div style="background:#14171E;border:1px solid rgba(255,255,255,.08);border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));width:100%;max-width:430px;box-shadow:0 -16px 50px rgba(0,0,0,.6);max-height:92vh;overflow-y:auto;animation:sheetUp .25s ease">
-        <div style="width:38px;height:4px;border-radius:99px;background:#2B3340;margin:4px auto 14px"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-          <span style="font-size:19px;font-weight:700;letter-spacing:-.3px">${isEdit?"Buchung bearbeiten":"Neue Buchung"}</span>
-          <button onclick="App.closeModal()" style="background:#1E222B;border:none;color:#97A1B0;font-size:16px;cursor:pointer;width:32px;height:32px;border-radius:10px;line-height:1">✕</button>
+    host.innerHTML = `
+    <div class="overlay ${s.enter?"enter":""} ${s.leaving?"leave":""}" onclick="App.sheetBg(event)">
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="${isEdit?"Buchung bearbeiten":"Neue Buchung"}">
+        <div class="grab"></div>
+        <div class="sheet-head">
+          <h2>${isEdit?"Buchung bearbeiten":"Neue Buchung"}</h2>
+          <button class="x-btn" onclick="App.closeSheet()" aria-label="Schließen">${ICON.x}</button>
         </div>
 
-        <div style="margin-bottom:14px">
-          <label style="${lblStyle()}">Art</label>
-          ${dropdown('type',f.type,typeOptions)}
+        <div class="field">
+          <label class="flabel" for="f-amount">Betrag</label>
+          <div class="amount-box ${s.error?"err":""}">
+            <span>${CUR_SYMBOL}</span>
+            <input id="f-amount" class="amount-in" value="${esc(f.amount)}" oninput="App.onField('amount',this.value)" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00">
+          </div>
+          ${s.error?`<div class="err-text">${esc(s.error)}</div>`:""}
         </div>
 
-        ${customFields}
-        ${routeHint}
-
-        <div style="margin-bottom:14px">
-          <label style="${lblStyle()}">Betrag (${CUR})</label>
-          <input value="${esc(f.amount)}" oninput="App.onField('amount',this.value)" type="number" inputmode="decimal" step="0.01" placeholder="0,00" style="${inpStyle(true)}">
+        <div class="field">
+          <label class="flabel">Art</label>
+          <div class="opts" role="radiogroup">${typeOpts}</div>
+          ${custom}
         </div>
 
-        <div style="margin-bottom:14px">
-          <label style="${lblStyle()}">Datum</label>
-          <input value="${esc(f.date)}" oninput="App.onField('date',this.value)" type="date" style="${inpStyle(false)}">
-        </div>
-        <div style="margin-bottom:6px">
-          <label style="${lblStyle()}">Notiz (optional)</label>
-          <input value="${esc(f.note)}" oninput="App.onField('note',this.value)" type="text" placeholder="z.B. Mai-Auszahlung" style="${inpStyle(false)}">
+        <div class="grid2 field">
+          <div><label class="flabel" for="f-date">Datum</label>
+            <input id="f-date" class="inp" type="date" value="${esc(f.date)}" oninput="App.onField('date',this.value)"></div>
+          <div><label class="flabel" for="f-note">Notiz</label>
+            <input id="f-note" class="inp" type="text" value="${esc(f.note)}" oninput="App.onField('note',this.value)" placeholder="optional" maxlength="120"></div>
         </div>
 
-        <button onclick="App.saveModal()" style="width:100%;background:${ACC_GRAD};color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;font-family:inherit;box-shadow:0 6px 18px ${ACCENT[0]}55">${isEdit?"Speichern":"Hinzufügen"}</button>
-        ${delBtn}
+        <button class="btn-primary" onclick="App.save()">${isEdit?"Speichern":"Hinzufügen"}</button>
+        ${isEdit && entry ? `<div class="row2">
+          <button class="btn-ghost" onclick="App.toggleSettleFromSheet()">${entry.settled?"Wieder öffnen":"Als erledigt markieren"}</button>
+          <button class="btn-ghost danger" onclick="App.deleteEntry()">Löschen</button>
+        </div>` : ``}
       </div>
     </div>`;
+    const box=host.querySelector(".sheet"); if(box) box.scrollTop=scroll;
+    s.enter=false;
   }
 
+  /* ---- Dialog ---- */
+  function ask(o){ return new Promise(resolve=>{ state.dialog={...o, resolve, enter:true}; state.menuOpen=false; render(); }); }
+  function closeDialog(result){ const d=state.dialog; if(!d) return; state.dialog=null; render(); d.resolve(result); }
+  function renderDialog(){
+    const host=document.getElementById("dialog"); const d=state.dialog;
+    if(!d){ host.innerHTML=""; return; }
+    host.innerHTML=`<div class="overlay center ${d.enter?"enter":""}" onclick="App.dialogBg(event)">
+      <div class="dialog" role="alertdialog" aria-modal="true">
+        <h3>${esc(d.title)}</h3>
+        ${d.text?`<p>${esc(d.text)}</p>`:""}
+        <div class="dialog-btns">
+          <button onclick="App.dialogAnswer(false)">Abbrechen</button>
+          <button class="ok ${d.danger?"danger":""}" onclick="App.dialogAnswer(true)">${esc(d.ok||"OK")}</button>
+        </div>
+      </div></div>`;
+    d.enter=false;
+  }
+
+  /* ---- Toast ---- */
+  let toastTimer=null;
+  function showToast(msg, undo){
+    clearTimeout(toastTimer);
+    state.toast={ msg, undo, key:Date.now() };
+    renderToast();
+    toastTimer=setTimeout(()=>{ state.toast=null; renderToast(); }, undo?5000:3000);
+  }
+  function renderToast(){
+    const host=document.getElementById("toast"); const t=state.toast;
+    if(!t){ host.innerHTML=""; host.dataset.key=""; return; }
+    if(host.dataset.key===String(t.key)) return;  // nicht neu animieren
+    host.dataset.key=String(t.key);
+    host.innerHTML=`<div class="toast" role="status"><span>${esc(t.msg)}</span>${t.undo?`<button onclick="App.undo()">Rückgängig</button>`:""}</div>`;
+  }
+  // Änderung speichern und Rückgängig anbieten
+  function commit(entries, msg){ const prev=state.entries; persist(entries); showToast(msg, ()=>persist(prev)); }
+
   /* ====== Actions (global) ====== */
+  function blankForm(){ return { type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; }
+  function canHover(){ return window.matchMedia && matchMedia("(hover:hover) and (pointer:fine)").matches; }
+
   window.App = {
     toggleMenu(ev){ if(ev) ev.stopPropagation(); state.menuOpen=!state.menuOpen; render(); },
     closeMenu(){ state.menuOpen=false; render(); },
     setFilter(f){ state.filter=f; render(); },
-    settleBalance(from,to){
-      if(confirm(`${ACCOUNTS[from].name} ↔ ${ACCOUNTS[to].name}: alle offenen Buchungen zwischen den beiden als erledigt markieren?`)){
-        const entries=state.entries.map(e=>{
-          if(e.settled) return e;
-          const {d,c}=getDC(e); if(!d||!c) return e;
-          if((d===from&&c===to)||(d===to&&c===from)) return {...e, settled:true, settledDate:today()};
-          return e;
-        });
-        persist(entries);
-      }
+    setPerson(p){ state.person = state.person===p ? null : p; render(); },
+
+    async settleBalance(from,to){
+      const ids=state.entries.filter(e=>{ if(e.settled) return false; const {d,c}=getDC(e);
+        return (d===from&&c===to)||(d===to&&c===from); }).map(e=>e.id);
+      const bal=computeBalances(state.entries.filter(e=>!e.settled)).find(b=>b.from===from&&b.to===to);
+      const ok=await ask({ title:"Saldo erledigen?",
+        text:`${ACCOUNTS[from].name} hat ${ACCOUNTS[to].name} ${bal?fmt(bal.amount):""} gezahlt? Dann ${ids.length===1?"wird":"werden"} ${plural(ids.length,"offene Buchung","offene Buchungen")} zwischen den beiden abgehakt.`,
+        ok:"Erledigt" });
+      if(!ok) return;
+      const set=new Set(ids), d=today();
+      commit(state.entries.map(e=> set.has(e.id) ? {...e, settled:true, settledDate:d} : e), plural(ids.length,"Buchung","Buchungen")+" erledigt");
+    },
+    toggleSettle(id){
+      const e=state.entries.find(x=>x.id===id); if(!e) return;
+      const nowSettled=!e.settled;
+      commit(state.entries.map(x=> x.id===id ? (nowSettled ? {...x, settled:true, settledDate:today()} : (({settledDate,...r})=>({...r, settled:false}))(x)) : x),
+        nowSettled ? "Als erledigt markiert" : "Wieder offen");
     },
 
-    openNew(){ state.modalOpen=true; state.editId=null; state.menuOpen=false; state.openDropdown=null;
-      state.form={ type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; render(); },
+    openNew(){ state.menuOpen=false; state.sheet={ id:null, form:blankForm(), error:null, enter:true }; render();
+      if(canHover()){ const el=document.getElementById("f-amount"); if(el) el.focus(); } },
     openEdit(id){ const e=state.entries.find(x=>x.id===id); if(!e) return;
-      state.modalOpen=true; state.editId=id; state.openDropdown=null;
-      state.form={ type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac", amount:String(e.amount), date:e.date||today(), note:e.note||"" }; render(); },
-    closeModal(){ state.modalOpen=false; state.editId=null; state.openDropdown=null; render(); },
-    closeIfOverlay(ev){ if(ev.target===ev.currentTarget) App.closeModal(); },
+      state.sheet={ id, error:null, enter:true, form:{ type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac",
+        amount:String(e.amount).replace(".",","), date:e.date, note:e.note||"" } };
+      render(); },
+    closeSheet(){ const s=state.sheet; if(!s||s.leaving) return;
+      s.leaving=true; renderSheet();
+      setTimeout(()=>{ if(state.sheet===s){ state.sheet=null; render(); } }, 170); },
+    sheetBg(ev){ if(ev.target===ev.currentTarget) App.closeSheet(); },
+    setType(k){ state.sheet.form.type=k; render(); },
+    pickAccount(field,k){ const f=state.sheet.form; const other=field==="debtor"?"creditor":"debtor";
+      if(f[other]===k) f[other]=f[field];  // gleiche Person auf beiden Seiten → tauschen
+      f[field]=k; render(); },
+    swapAccounts(){ const f=state.sheet.form; [f.debtor,f.creditor]=[f.creditor,f.debtor]; render(); },
+    onField(k,v){ state.sheet.form[k]=v;   // kein Re-Render → Fokus bleibt beim Tippen
+      if(k==="amount" && state.sheet.error){ state.sheet.error=null; const b=document.querySelector(".amount-box"); if(b) b.classList.remove("err"); const t=document.querySelector(".err-text"); if(t) t.remove(); } },
 
-    toggleDropdown(id){ state.openDropdown = state.openDropdown===id ? null : id; render(); },
-    selectDropdown(id,v){ if(id==="type") state.form.type=v; else state.form[id]=v; state.openDropdown=null; render(); },
-    onField(k,v){ state.form[k]=v; },  // kein re-render → Fokus bleibt beim Tippen
-
-    saveModal(){
-      const f=state.form;
-      const amount=parseFloat(String(f.amount||"").replace(",","."));
-      if(!amount||amount<=0){ alert("Bitte einen gültigen Betrag eingeben."); return; }
-      let debtor=null, creditor=null;
-      if(f.type==="custom"){ debtor=f.debtor; creditor=f.creditor;
-        if(debtor===creditor){ alert("Von und An dürfen nicht gleich sein."); return; } }
-      const entries=state.entries.slice();
-      if(state.editId===null){
-        entries.push({ id:Date.now(), type:f.type, amount, currency:CUR, debtor, creditor,
-          date:f.date||today(), note:(f.note||"").trim(), settled:false });
-      } else {
-        const e=entries.find(x=>x.id===state.editId);
-        if(e){ e.type=f.type; e.amount=amount; e.currency=CUR; e.debtor=debtor; e.creditor=creditor; e.date=f.date||e.date; e.note=(f.note||"").trim(); }
-      }
-      state.modalOpen=false; state.editId=null; persist(entries);
+    save(){
+      const s=state.sheet; if(!s||s.leaving) return; const f=s.form;
+      const amount=parseAmount(f.amount);
+      if(!(amount>0)){ s.error="Bitte einen gültigen Betrag eingeben, z.B. 1250,50"; render(); const el=document.getElementById("f-amount"); if(el) el.focus(); return; }
+      const custom=f.type==="custom";
+      const data={ type:f.type, amount, currency:CUR, debtor:custom?f.debtor:null, creditor:custom?f.creditor:null,
+        date:/^\d{4}-\d{2}-\d{2}$/.test(f.date)?f.date:today(), note:(f.note||"").trim() };
+      let entries;
+      if(s.id===null){
+        let id=Date.now(); while(state.entries.some(e=>e.id===id)) id++;
+        entries=[...state.entries, { id, ...data, settled:false }];
+      } else entries=state.entries.map(e=> e.id===s.id ? {...e, ...data} : e);
+      state.sheet=null;
+      persist(entries);
+      showToast(s.id===null ? "Buchung hinzugefügt" : "Gespeichert");
     },
-    delModal(){ if(state.editId===null) return;
-      if(confirm("Diese Buchung löschen?")){ const entries=state.entries.filter(x=>x.id!==state.editId);
-        state.modalOpen=false; state.editId=null; persist(entries); } },
-    toggleSettle(id){ const entries=state.entries.map(x=> x.id===id ? {...x, settled:!x.settled, settledDate: !x.settled ? today() : x.settledDate } : x); persist(entries); },
+    toggleSettleFromSheet(){ const id=state.sheet&&state.sheet.id; state.sheet=null; App.toggleSettle(id); },
+    deleteEntry(){ const id=state.sheet&&state.sheet.id; if(id===null) return; state.sheet=null;
+      commit(state.entries.filter(x=>x.id!==id), "Buchung gelöscht"); },
 
-    doExport(){ state.menuOpen=false;
+    dialogAnswer(v){ closeDialog(v); },
+    dialogBg(ev){ if(ev.target===ev.currentTarget) closeDialog(false); },
+    undo(){ const t=state.toast; if(!t||!t.undo) return; clearTimeout(toastTimer); state.toast=null; t.undo(); showToast("Rückgängig gemacht"); },
+
+    doExport(){
+      state.menuOpen=false;
       const blob=new Blob([JSON.stringify(state.entries,null,2)],{type:"application/json"});
       const url=URL.createObjectURL(blob); const a=document.createElement("a");
-      a.href=url; a.download="finanzen-backup-"+today()+".json"; a.click(); URL.revokeObjectURL(url); render(); },
-    triggerImport(){ state.menuOpen=false; render(); const el=document.getElementById("import-file"); if(el) el.click(); },
-    onImportFile(input){ const file=input.files[0]; if(!file) return;
-      const r=new FileReader();
-      r.onload=e=>{ try{ const data=JSON.parse(e.target.result);
-        if(!Array.isArray(data)) throw new Error("Falsches Format");
-        if(confirm("Backup importieren? Ersetzt die aktuellen Daten ("+state.entries.length+" Buchungen).")){
-          persist(data); alert("Importiert: "+data.length+" Buchungen."); }
-      }catch(err){ alert("Datei konnte nicht gelesen werden: "+err.message); } input.value=""; };
-      r.readAsText(file); },
-    doReset(){ state.menuOpen=false; render();
-      if(confirm("Wirklich ALLE Buchungen löschen? (Vorher Backup machen!)")) persist([]); }
+      a.href=url; a.download="finanzen-backup-"+today()+".json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+      try{ localStorage.setItem(BACKUP_KEY, today()); }catch(e){}
+      render(); showToast("Backup exportiert");
+    },
+    triggerImport(){ state.menuOpen=false; render(); document.getElementById("import-file").click(); },
+    doReset(){
+      ask({ title:"Alles löschen?", text:`Alle ${plural(state.entries.length,"Buchung","Buchungen")} werden von diesem Gerät entfernt. Mach am besten vorher ein Backup.`, ok:"Löschen", danger:true })
+        .then(ok=>{ if(ok) commit([], "Alle Buchungen gelöscht"); });
+    }
   };
+
+  document.getElementById("import-file").addEventListener("change", function(){
+    const input=this, file=input.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload=async ev=>{
+      input.value="";
+      let result;
+      try{ result=normalize(JSON.parse(ev.target.result)); }
+      catch(err){ showToast("Datei konnte nicht gelesen werden"); return; }
+      if(!result.entries.length){ showToast("Keine gültigen Buchungen in der Datei"); return; }
+      const ok=await ask({ title:"Backup importieren?",
+        text:`Ersetzt die aktuellen ${plural(state.entries.length,"Buchung","Buchungen")} durch ${plural(result.entries.length,"Buchung","Buchungen")} aus dem Backup.`+(result.skipped?` ${result.skipped} alte/ungültige Einträge werden übersprungen.`:""),
+        ok:"Importieren" });
+      if(ok){ state.person=null; commit(result.entries, plural(result.entries.length,"Buchung","Buchungen")+" importiert"); }
+    };
+    r.onerror=()=>{ input.value=""; showToast("Datei konnte nicht gelesen werden"); };
+    r.readAsText(file);
+  });
+
+  document.addEventListener("keydown", ev=>{
+    if(ev.key==="Escape"){
+      if(state.dialog) closeDialog(false);
+      else if(state.sheet) App.closeSheet();
+      else if(state.menuOpen) App.closeMenu();
+    } else if(ev.key==="Enter" && state.sheet && !state.dialog && ev.target.matches && ev.target.matches("#f-amount,#f-note")){
+      ev.preventDefault(); App.save();
+    }
+  });
+
+  // App-Icon für den Home-Bildschirm (wird zur Laufzeit gezeichnet, keine Extra-Datei nötig)
+  (function setIcon(){ try{
+    const c=document.createElement("canvas"); c.width=c.height=180; const x=c.getContext("2d");
+    const g=x.createLinearGradient(0,0,180,180); g.addColorStop(0,"#6366F1"); g.addColorStop(1,"#8B5CF6");
+    x.fillStyle=g; x.fillRect(0,0,180,180);
+    x.fillStyle="#fff"; x.font="700 104px -apple-system, 'Segoe UI', Roboto, sans-serif";
+    x.textAlign="center"; x.textBaseline="middle"; x.fillText("$",90,98);
+    const href=c.toDataURL("image/png");
+    ["apple-touch-icon","icon"].forEach(rel=>{ const l=document.createElement("link"); l.rel=rel; l.href=href; document.head.appendChild(l); });
+  }catch(e){} })();
 
   render();
 })();
