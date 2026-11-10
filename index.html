@@ -11,6 +11,9 @@
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex,nofollow">
 <title>Finanzen</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <style>
   :root{
     --bg:#0A0B0F; --s1:#13151B; --s2:#1A1D25; --s3:#242834;
@@ -39,7 +42,7 @@
   input::placeholder{color:#4A535F}
   .num{font-variant-numeric:tabular-nums}
 
-  .wrap{max-width:440px;margin:0 auto;min-height:100vh;padding:0 16px calc(120px + var(--safe-b));position:relative}
+  .wrap{max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:0 16px calc(120px + var(--safe-b));position:relative}
 
   /* Header */
   .top{display:flex;align-items:flex-end;justify-content:space-between;padding:calc(var(--safe-t) + 22px) 2px 4px}
@@ -103,6 +106,9 @@
   .bal-meta{font-size:12.5px;color:var(--muted);margin-top:3px}
   .btn-soft{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--acc-soft);border:1px solid var(--acc-line);color:var(--acc-text);font-size:13px;font-weight:650;padding:9px 13px;border-radius:12px;white-space:nowrap}
   .btn-soft:active{background:rgba(99,102,241,.24)}
+  .bal.is-zero .bal-amt{color:var(--muted)}
+  .more{display:block;width:100%;text-align:center;margin-top:12px;padding:13px;border-radius:14px;background:var(--s1);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--acc-text)}
+  .statusbar{position:fixed;top:0;left:0;right:0;height:var(--safe-t);background:rgba(10,11,15,.94);z-index:30;pointer-events:none}
   .empty{text-align:center;color:var(--faint);font-size:14px;padding:32px 16px;border:1px dashed rgba(255,255,255,.1);border-radius:20px;line-height:1.7}
   .clear{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:28px 16px;background:rgba(99,102,241,.09);border:1px solid rgba(99,102,241,.26);border-radius:20px}
   .clear-ic{width:46px;height:46px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(99,102,241,.4)}
@@ -144,10 +150,10 @@
   .fab:active{transform:scale(.93)}
 
   /* Sheet */
-  .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);padding-bottom:var(--kb,0px);transition:padding-bottom .2s;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
   .overlay.enter{animation:fadeIn .2s ease}
   .overlay.leave{animation:fadeOut .18s ease forwards}
-  .sheet{width:100%;max-width:440px;max-height:94vh;overflow-y:auto;overscroll-behavior:contain;background:#12141A;border:1px solid var(--line2);border-bottom:none;border-radius:28px 28px 0 0;padding:8px 18px calc(22px + var(--safe-b));box-shadow:0 -16px 50px rgba(0,0,0,.6)}
+  .sheet{width:100%;max-width:440px;max-height:94vh;max-height:calc(94dvh - var(--kb,0px));overflow-y:auto;overscroll-behavior:contain;background:#12141A;border:1px solid var(--line2);border-bottom:none;border-radius:28px 28px 0 0;padding:8px 18px calc(22px + var(--safe-b));box-shadow:0 -16px 50px rgba(0,0,0,.6)}
   .overlay.enter .sheet{animation:sheetUp .28s cubic-bezier(.2,.9,.3,1)}
   .overlay.leave .sheet{animation:sheetDown .18s ease forwards}
   .grab{width:38px;height:5px;border-radius:99px;background:#2B3340;margin:4px auto 12px}
@@ -183,10 +189,11 @@
   .custom .field:last-child{margin-bottom:0}
   .swap{display:flex;justify-content:center;margin:-4px 0 8px}
   .swap button{font-size:12px;font-weight:600;color:var(--acc-text);padding:4px 10px;border-radius:99px;background:var(--acc-soft)}
-  .inp{width:100%;display:block;background:#0C0E13;border:1px solid #252B35;color:var(--text);border-radius:14px;padding:13px 14px;font:inherit;font-size:16px;outline:none;min-height:50px;-webkit-appearance:none;appearance:none}
+  .inp{width:100%;min-width:0;display:block;background:#0C0E13;border:1px solid #252B35;color:var(--text);border-radius:14px;padding:13px 14px;font:inherit;font-size:16px;outline:none;min-height:50px;-webkit-appearance:none;appearance:none}
   .inp:focus{border-color:var(--acc)}
   input[type=date].inp::-webkit-date-and-time-value{text-align:left}
   .grid2{display:grid;grid-template-columns:1fr 1.35fr;gap:10px}
+  .grid2>div{min-width:0}
   .btn-primary{width:100%;background:var(--grad);color:#fff;border-radius:15px;padding:16px;font-size:16px;font-weight:700;text-align:center;box-shadow:0 8px 22px rgba(99,102,241,.35);margin-top:4px}
   .btn-primary:active{transform:scale(.99);opacity:.92}
   .row2{display:flex;gap:8px;margin-top:10px}
@@ -206,11 +213,13 @@
 
   /* Toast */
   .toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%);z-index:60;width:calc(100% - 32px);max-width:408px;display:flex;align-items:center;gap:12px;background:#22262F;border:1px solid var(--line2);border-radius:16px;padding:12px 12px 12px 16px;box-shadow:0 12px 36px rgba(0,0,0,.55);animation:toastIn .22s ease;font-size:14px}
+  .toast.danger{background:#3A1F24;border-color:rgba(255,92,92,.45)}
   .toast span{flex:1;min-width:0}
   .toast button{flex:none;font-size:14px;font-weight:700;color:var(--acc-text);padding:6px 10px;border-radius:10px;background:var(--acc-soft)}
 </style>
 </head>
 <body>
+<div class="statusbar"></div>
 <div id="app"></div>
 <div id="sheet"></div>
 <div id="dialog"></div>
@@ -242,73 +251,100 @@
   const CUR_SYMBOL = "$";
   const STORE_KEY = "finanzen_v1";
   const BACKUP_KEY = "finanzen_last_backup";
+  const SNAP_KEY = "finanzen_v1_vorher";      // Stand vor dem letzten Import / "Alles löschen"
+  const MAX_AMOUNT = 1e9;
+  const PAGE = 60;                             // Buchungen pro Seite in der Liste
 
-  /* ====== Speicher ====== */
+  /* ====== Basis-Helfer ====== */
+  // eigene Schlüssel prüfen – sonst gelten "constructor", "toString" usw. als gültige Konten/Arten
+  function has(obj,k){ return typeof k==="string" && Object.prototype.hasOwnProperty.call(obj,k); }
   function round2(n){ return Math.round(n*100)/100; }
   function pad(n){ return String(n).padStart(2,"0"); }
   // lokales Datum (nicht UTC – sonst kurz nach Mitternacht noch "gestern")
   function today(){ const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function parseDate(iso){ const [y,m,d]=iso.split("-").map(Number); return new Date(y,m-1,d); }
+  function validDate(s){
+    if(typeof s!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const d=parseDate(s); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())===s;
+  }
+  function validAmount(n){ return Number.isFinite(n) && n>0 && n<=MAX_AMOUNT; }
 
+  /* ====== Speicher ====== */
   // Bereinigt geladene/importierte Daten, damit kaputte oder alte Einträge die App nie zum Absturz bringen
   function normalize(raw){
     if(!Array.isArray(raw)) throw new Error("Die Datei enthält keine Buchungsliste.");
     const out=[], seen=new Set(); let skipped=0, next=Date.now();
     raw.forEach(e=>{
-      if(!e || typeof e!=="object" || !TYPES[e.type]){ skipped++; return; }  // u.a. alte "payment"-Gegenbuchungen
-      const amount=round2(parseFloat(e.amount));
-      if(!(amount>0)){ skipped++; return; }
+      if(!e || typeof e!=="object" || !has(TYPES,e.type)){ skipped++; return; }  // u.a. alte "payment"-Gegenbuchungen
+      const amount=round2(Number(e.amount));
+      if(!validAmount(amount)){ skipped++; return; }
       let debtor=null, creditor=null;
       if(e.type==="custom"){
         debtor=e.debtor; creditor=e.creditor;
-        if(!ACCOUNTS[debtor] || !ACCOUNTS[creditor] || debtor===creditor){ skipped++; return; }
+        if(!has(ACCOUNTS,debtor) || !has(ACCOUNTS,creditor) || debtor===creditor){ skipped++; return; }
       }
       let id=Number(e.id);
-      if(!Number.isFinite(id) || seen.has(id)){ while(seen.has(next)) next++; id=next++; }
+      if(!Number.isSafeInteger(id) || seen.has(id)){ while(seen.has(next)) next++; id=next++; }
       seen.add(id);
       const entry={ id, type:e.type, amount, currency:CUR, debtor, creditor,
-        date:/^\d{4}-\d{2}-\d{2}$/.test(e.date) ? e.date : today(),
-        note:typeof e.note==="string" ? e.note : "", settled:!!e.settled };
-      if(entry.settled && e.settledDate) entry.settledDate=String(e.settledDate);
+        date:validDate(e.date) ? e.date : today(),
+        note:typeof e.note==="string" ? e.note.slice(0,500) : "", settled:e.settled===true };
+      if(entry.settled && validDate(e.settledDate)) entry.settledDate=e.settledDate;
       out.push(entry);
     });
     return { entries:out, skipped };
   }
 
+  function storeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function storeSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+
+  // Liefert die Buchungen plus ggf. einen Hinweis, der nach dem ersten Rendern angezeigt wird
   function load(){
-    const raw=localStorage.getItem(STORE_KEY);
-    if(!raw) return [];
+    let raw;
+    try{ raw=localStorage.getItem(STORE_KEY); }
+    catch(e){ return { entries:[], notice:"Speicher ist blockiert – Änderungen können nicht gespeichert werden." }; }
+    if(!raw) return { entries:[] };
     try{
       const { entries, skipped }=normalize(JSON.parse(raw));
-      if(skipped) save(entries);
-      return entries;
+      if(skipped){
+        // Original sichern, bevor bereinigt wird
+        storeSet(STORE_KEY+"_vor_bereinigung", raw);
+        storeSet(STORE_KEY, JSON.stringify(entries));
+        return { entries, notice:`${skipped} ungültige ${skipped===1?"Buchung":"Buchungen"} entfernt (Original gesichert)` };
+      }
+      return { entries };
     }catch(e){
-      // unlesbare Daten nicht einfach überschreiben, sondern beiseitelegen
-      try{ localStorage.setItem(STORE_KEY+"_defekt_"+Date.now(), raw); }catch(_){}
-      return [];
+      // unlesbare Daten nicht überschreiben, sondern beiseitelegen
+      storeSet(STORE_KEY+"_defekt_"+Date.now(), raw);
+      return { entries:[], notice:"Gespeicherte Daten waren beschädigt und wurden beiseitegelegt. Bitte Backup importieren." };
     }
-  }
-  function save(entries){
-    try{ localStorage.setItem(STORE_KEY, JSON.stringify(entries)); return true; }
-    catch(e){ return false; }
   }
   function persist(entries){
     state.entries=entries;
-    if(!save(entries)) showToast("Speichern fehlgeschlagen – bitte Backup exportieren!");
+    const ok=storeSet(STORE_KEY, JSON.stringify(entries));
     render();
+    if(!ok) showToast("Speichern fehlgeschlagen – bitte sofort ein Backup exportieren!", null, true, true);
+    return ok;
   }
-  function lastBackup(){ try{ return localStorage.getItem(BACKUP_KEY); }catch(e){ return null; } }
+  function snapshot(){ storeSet(SNAP_KEY, JSON.stringify({ date:today(), entries:state.entries })); }
+  function readSnapshot(){
+    try{ const s=JSON.parse(storeGet(SNAP_KEY)); if(s && Array.isArray(s.entries) && validDate(s.date)) return s; }catch(e){}
+    return null;
+  }
 
   /* ====== State ====== */
   const state = {
     entries: [],
     filter: "open",       // open | settled | all
     person: null,         // Personen-Filter
+    limit: PAGE,
     menuOpen: false,
-    sheet: null,          // { id, form, error, enter, leaving }
+    sheet: null,          // { id, form, initial, error, enter, leaving }
     dialog: null,         // { title, text, ok, danger, resolve, enter }
-    toast: null           // { msg, undo }
+    toast: null           // { msg, undo, sticky, key }
   };
-  state.entries=load();
+  const loaded=load();
+  state.entries=loaded.entries;
 
   /* ====== Helpers ====== */
   const NF=new Intl.NumberFormat("de-DE",{style:"currency",currency:CUR});
@@ -317,18 +353,33 @@
   function getDC(e){ if(e.type==="custom") return {d:e.debtor,c:e.creditor}; const t=TYPES[e.type]; return {d:t.debtor,c:t.creditor}; }
   function involves(e,p){ const {d,c}=getDC(e); return d===p || c===p; }
   function pairKey(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
-  function parseDate(iso){ const [y,m,d]=iso.split("-").map(Number); return new Date(y,m-1,d); }
   function dayLabel(iso){ return parseDate(iso).toLocaleDateString("de-DE",{day:"numeric",month:"short"}); }
   function monthLabel(ym){ const [y,m]=ym.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString("de-DE",{month:"long",year:"numeric"}); }
-  function parseAmount(s){
-    s=String(s||"").trim().replace(/[\s$€]/g,"");
-    if(s.includes(",") && s.includes(".")){
-      s = s.lastIndexOf(",")>s.lastIndexOf(".") ? s.replace(/\./g,"").replace(",",".") : s.replace(/,/g,"");
-    } else s=s.replace(",",".");
-    if(!/^(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
-    return round2(parseFloat(s));
-  }
   function plural(n,one,many){ return n+" "+(n===1?one:many); }
+
+  // Betrag aus Eingabe lesen: "1250,50", "1.250,50", "1,250.50", "1.250", ".5" → Zahl oder Fehlertext
+  function parseAmount(input){
+    const s=String(input||"").trim().replace(/[\s$€]/g,"");
+    if(!s) return { err:"Bitte einen Betrag eingeben." };
+    if(/^[-−]/.test(s)) return { err:"Der Betrag muss positiv sein." };
+    const commas=(s.match(/,/g)||[]).length, dots=(s.match(/\./g)||[]).length;
+    let dec=null;                                        // Dezimaltrenner (null = nur Tausenderpunkte)
+    if(commas && dots) dec = s.lastIndexOf(",")>s.lastIndexOf(".") ? "," : ".";
+    else if(commas) dec = commas===1 ? "," : null;
+    else if(dots) dec = dots===1 && !/^[1-9]\d{0,2}\.\d{3}$/.test(s) ? "." : null;  // "1.250" = 1250
+    let int=s, frac="";
+    if(dec){ const i=s.lastIndexOf(dec); int=s.slice(0,i); frac=s.slice(i+1); }
+    if(/[.,]/.test(int)){
+      if((dec && int.includes(dec)) || !/^\d{1,3}([.,]\d{3})+$/.test(int)) return { err:"Ungültiges Zahlenformat." };
+      int=int.replace(/[.,]/g,"");
+    }
+    if(!/^\d*$/.test(int) || !/^\d*$/.test(frac) || (!int && !frac)) return { err:"Ungültiges Zahlenformat." };
+    if(frac.length>2) return { err:"Höchstens 2 Nachkommastellen." };
+    const v=Number((int||"0")+"."+(frac||"0"));
+    if(!(v>0)) return { err:"Der Betrag muss größer als 0 sein." };
+    if(v>MAX_AMOUNT) return { err:"Der Betrag ist zu groß." };
+    return { v:round2(v) };
+  }
 
   function avatar(key,size){ const a=ACCOUNTS[key];
     return `<span class="av" style="--s:${size}px;background:linear-gradient(135deg,${a.color[0]},${a.color[1]})">${a.av}</span>`; }
@@ -341,10 +392,12 @@
     x:`<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
     down:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>`,
     up:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V5M6 10l6-6 6 6M5 20h14"/></svg>`,
+    restore:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 108-8 8 8 0 00-6 2.7L4 9M4 4v5h5"/></svg>`,
     trash:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>`
   };
 
   /* ====== Berechnungen ====== */
+  // Saldo je Paar; Paare, die sich genau aufheben, kommen mit zero:true zurück (damit man sie abhaken kann)
   function computeBalances(open){
     const map={};
     open.forEach(e=>{
@@ -354,8 +407,10 @@
       map[key].net += d===a ? e.amount : -e.amount;
       map[key].count++;
     });
-    return Object.values(map).filter(p=>Math.abs(p.net)>=0.005)
-      .map(p=> p.net>0 ? {from:p.a,to:p.b,amount:round2(p.net),count:p.count} : {from:p.b,to:p.a,amount:round2(-p.net),count:p.count})
+    return Object.values(map)
+      .map(p=>{ const net=round2(p.net);
+        if(net===0) return {from:p.a,to:p.b,amount:0,count:p.count,zero:true};
+        return net>0 ? {from:p.a,to:p.b,amount:net,count:p.count} : {from:p.b,to:p.a,amount:-net,count:p.count}; })
       .sort((x,y)=>y.amount-x.amount);
   }
   // Netto je Person: positiv = bekommt Geld, negativ = schuldet
@@ -380,16 +435,18 @@
 
   function renderMainHtml(){
     const open=state.entries.filter(e=>!e.settled);
-    const bal=computeBalances(open);
+    const balAll=computeBalances(open);
+    const bal=balAll.filter(b=>!b.zero);
     const total=round2(bal.reduce((s,p)=>s+p.amount,0));
     const nets=personNets(open);
     const P=state.person;
     const scoped=P ? state.entries.filter(e=>involves(e,P)) : state.entries;
     const scopedOpen=scoped.filter(e=>!e.settled);
-    const balShown=P ? bal.filter(b=>b.from===P||b.to===P) : bal;
+    const balShown=P ? balAll.filter(b=>b.from===P||b.to===P) : balAll;
     const settledCount=state.entries.length-open.length;
-    const lb=lastBackup();
-    const backupDays=lb ? Math.floor((parseDate(today())-parseDate(lb))/864e5) : null;
+    const lb=storeGet(BACKUP_KEY); const lbOk=validDate(lb);
+    const backupDays=lbOk ? Math.max(0, Math.round((parseDate(today())-parseDate(lb))/864e5)) : null;
+    const snap=state.menuOpen ? readSnapshot() : null;
 
     const heroSub = !state.entries.length ? "Noch nichts erfasst"
       : total>0 ? `über ${plural(bal.length,"offenen Saldo","offene Salden")}` : "Alles ausgeglichen";
@@ -402,13 +459,14 @@
           <h1 class="title">Finanzen</h1>
         </div>
         <div class="menu-anchor">
-          <button class="icon-btn" onclick="App.toggleMenu(event)" aria-label="Menü" aria-expanded="${state.menuOpen}">${ICON.more}</button>
+          <button class="icon-btn" onclick="App.toggleMenu()" aria-label="Menü" aria-expanded="${state.menuOpen}">${ICON.more}</button>
           ${state.menuOpen ? `
           <div class="menu" role="menu">
             <button onclick="App.doExport()" role="menuitem">${ICON.down} Backup exportieren</button>
             <button onclick="App.triggerImport()" role="menuitem">${ICON.up} Backup importieren</button>
+            ${snap ? `<button onclick="App.restoreSnapshot()" role="menuitem">${ICON.restore} Stand vom ${esc(dayLabel(snap.date))} zurückholen</button>` : ``}
             <button class="danger" onclick="App.doReset()" role="menuitem">${ICON.trash} Alles löschen</button>
-            <div class="menu-info">${plural(state.entries.length,"Buchung","Buchungen")} gespeichert<br>Letztes Backup: ${lb ? dayLabel(lb)+" "+lb.slice(0,4) : "noch keins"}</div>
+            <div class="menu-info">${plural(state.entries.length,"Buchung","Buchungen")} gespeichert<br>Letztes Backup: ${lbOk ? esc(dayLabel(lb)+" "+lb.slice(0,4)) : "noch keins"}</div>
           </div>` : ``}
         </div>
       </header>
@@ -452,8 +510,8 @@
         ${renderEntries(scoped)}
       </section>
 
-      <p class="foot">Daten bleiben nur auf diesem Gerät – regelmäßig über ⋯ ein Backup exportieren.<br>
-        ${state.entries.length ? (lb ? `<b class="${backupDays>14?"warn":""}">Letztes Backup: ${backupDays===0?"heute":backupDays===1?"gestern":"vor "+backupDays+" Tagen"}</b>` : `<b class="warn">Noch kein Backup gemacht</b>`) : `iPhone: Safari → Teilen → „Zum Home-Bildschirm“`}</p>
+      <p class="foot">Daten bleiben nur auf diesem Gerät (und nur in dieser App bzw. diesem Browser) – regelmäßig über ⋯ ein Backup exportieren.<br>
+        ${state.entries.length ? (lbOk ? `<b class="${backupDays>14?"warn":""}">Letztes Backup: ${backupDays===0?"heute":backupDays===1?"gestern":"vor "+backupDays+" Tagen"}</b>` : `<b class="warn">Noch kein Backup gemacht</b>`) : `iPhone: Safari → Teilen → „Zum Home-Bildschirm“`}</p>
 
       <button class="fab" onclick="App.openNew()" aria-label="Neue Buchung">${ICON.plus}</button>
     </div>`;
@@ -473,17 +531,20 @@
   }
 
   function balanceCard(p){
-    return `<div class="card bal">
+    const meta = p.zero
+      ? `gleicht sich aus · ${plural(p.count,"Buchung","Buchungen")}`
+      : `${esc(ACCOUNTS[p.from].short)} schuldet ${esc(ACCOUNTS[p.to].short)} · ${plural(p.count,"Buchung","Buchungen")}`;
+    return `<div class="card bal ${p.zero?"is-zero":""}">
         <div class="bal-who">
           <span class="pair">${avatar(p.from,36)}${avatar(p.to,36)}</span>
-          <div class="bal-names">${esc(ACCOUNTS[p.from].name)}<span class="arrow">→</span>${esc(ACCOUNTS[p.to].name)}</div>
+          <div class="bal-names">${esc(ACCOUNTS[p.from].name)}<span class="arrow">${p.zero?"↔":"→"}</span>${esc(ACCOUNTS[p.to].name)}</div>
         </div>
         <div class="bal-bottom">
           <div style="min-width:0">
             <div class="bal-amt num">${fmt(p.amount)}</div>
-            <div class="bal-meta">${esc(ACCOUNTS[p.from].short)} schuldet ${esc(ACCOUNTS[p.to].short)} · ${plural(p.count,"Buchung","Buchungen")}</div>
+            <div class="bal-meta">${meta}</div>
           </div>
-          <button class="btn-soft" onclick="App.settleBalance('${p.from}','${p.to}')">${ICON.check("#C7CAFF")}Erledigt</button>
+          <button class="btn-soft" onclick="App.settleBalance('${p.from}','${p.to}')">${ICON.check("#C7CAFF")}${p.zero?"Abhaken":"Erledigt"}</button>
         </div>
       </div>`;
   }
@@ -506,12 +567,15 @@
         : state.filter==="settled" ? "Noch nichts erledigt." : "Keine Buchungen in dieser Ansicht.";
       return `<div class="empty">${msg}</div>`;
     }
+    const rest=list.length-state.limit;
+    if(rest>0) list=list.slice(0,state.limit);
     const groups=[];
     list.forEach(e=>{ const m=e.date.slice(0,7); let g=groups[groups.length-1];
       if(!g||g.m!==m){ g={m,items:[],sum:0}; groups.push(g); } g.items.push(e); g.sum+=e.amount; });
     return groups.map(g=>`
       <div class="month"><span>${monthLabel(g.m)}</span><span class="num">${fmt(round2(g.sum))}</span></div>
-      <div class="list">${g.items.map(entryRow).join("")}</div>`).join("");
+      <div class="list">${g.items.map(entryRow).join("")}</div>`).join("")
+      + (rest>0 ? `<button class="more" onclick="App.showMore()">${plural(rest,"weitere Buchung","weitere Buchungen")} anzeigen</button>` : ``);
   }
 
   function entryRow(e){
@@ -559,7 +623,7 @@
       </div>` : ``;
 
     host.innerHTML = `
-    <div class="overlay ${s.enter?"enter":""} ${s.leaving?"leave":""}" onclick="App.sheetBg(event)">
+    <div class="overlay ${s.enter?"enter":""} ${s.leaving?"leave":""}" onpointerdown="App.bgDown(event)" onclick="App.sheetBg(event)">
       <div class="sheet" role="dialog" aria-modal="true" aria-label="${isEdit?"Buchung bearbeiten":"Neue Buchung"}">
         <div class="grab"></div>
         <div class="sheet-head">
@@ -591,17 +655,28 @@
 
         <button class="btn-primary" onclick="App.save()">${isEdit?"Speichern":"Hinzufügen"}</button>
         ${isEdit && entry ? `<div class="row2">
-          <button class="btn-ghost" onclick="App.toggleSettleFromSheet()">${entry.settled?"Wieder öffnen":"Als erledigt markieren"}</button>
+          <button class="btn-ghost" onclick="App.save(true)">${entry.settled?"Wieder öffnen":"Als erledigt markieren"}</button>
           <button class="btn-ghost danger" onclick="App.deleteEntry()">Löschen</button>
         </div>` : ``}
       </div>
     </div>`;
     const box=host.querySelector(".sheet"); if(box) box.scrollTop=scroll;
     s.enter=false;
+    document.documentElement.classList.toggle("lock", !!(state.sheet || state.dialog));
+  }
+  function sheetDirty(){ const s=state.sheet; return !!s && JSON.stringify(s.form)!==s.initial; }
+  function openSheet(id, form){
+    state.menuOpen=false; hideToast();
+    state.sheet={ id, form, initial:JSON.stringify(form), error:null, enter:true };
+    render();
   }
 
   /* ---- Dialog ---- */
-  function ask(o){ return new Promise(resolve=>{ state.dialog={...o, resolve, enter:true}; state.menuOpen=false; render(); }); }
+  function ask(o){
+    if(state.dialog) state.dialog.resolve(false);   // offenen Dialog sauber beenden
+    hideToast();
+    return new Promise(resolve=>{ state.dialog={...o, resolve, enter:true}; state.menuOpen=false; render(); });
+  }
   function closeDialog(result){ const d=state.dialog; if(!d) return; state.dialog=null; render(); d.resolve(result); }
   function renderDialog(){
     const host=document.getElementById("dialog"); const d=state.dialog;
@@ -619,109 +694,160 @@
   }
 
   /* ---- Toast ---- */
-  let toastTimer=null;
-  function showToast(msg, undo){
+  let toastTimer=null, toastSeq=0;
+  function showToast(msg, undo, sticky, danger){
     clearTimeout(toastTimer);
-    state.toast={ msg, undo, key:Date.now() };
+    state.toast={ msg, undo, sticky:!!sticky, danger:!!danger, key:++toastSeq };
     renderToast();
-    toastTimer=setTimeout(()=>{ state.toast=null; renderToast(); }, undo?5000:3000);
+    if(!sticky) toastTimer=setTimeout(hideToast, undo?5000:3000);
+  }
+  function hideToast(){
+    if(!state.toast || (state.toast.sticky && arguments[0]!=="force")) return;
+    clearTimeout(toastTimer); state.toast=null; renderToast();
   }
   function renderToast(){
     const host=document.getElementById("toast"); const t=state.toast;
     if(!t){ host.innerHTML=""; host.dataset.key=""; return; }
     if(host.dataset.key===String(t.key)) return;  // nicht neu animieren
     host.dataset.key=String(t.key);
-    host.innerHTML=`<div class="toast" role="status"><span>${esc(t.msg)}</span>${t.undo?`<button onclick="App.undo()">Rückgängig</button>`:""}</div>`;
+    host.innerHTML=`<div class="toast ${t.danger?"danger":""}" role="${t.danger?"alert":"status"}"><span>${esc(t.msg)}</span>${
+      t.undo?`<button onclick="App.undo()">Rückgängig</button>`: t.sticky?`<button onclick="App.dismissToast()">OK</button>`:""}</div>`;
   }
   // Änderung speichern und Rückgängig anbieten
-  function commit(entries, msg){ const prev=state.entries; persist(entries); showToast(msg, ()=>persist(prev)); }
+  function commit(entries, msg){ const prev=state.entries; if(persist(entries)) showToast(msg, ()=>persist(prev)); }
 
   /* ====== Actions (global) ====== */
   function blankForm(){ return { type:"fanvue", debtor:"mp", creditor:"ac", amount:"", date:today(), note:"" }; }
   function canHover(){ return window.matchMedia && matchMedia("(hover:hover) and (pointer:fine)").matches; }
+  let lastToggle=0, bgDownSelf=false;
 
   window.App = {
-    toggleMenu(ev){ if(ev) ev.stopPropagation(); state.menuOpen=!state.menuOpen; render(); },
+    toggleMenu(){ state.menuOpen=!state.menuOpen; render(); },
     closeMenu(){ state.menuOpen=false; render(); },
-    setFilter(f){ state.filter=f; render(); },
-    setPerson(p){ state.person = state.person===p ? null : p; render(); },
+    setFilter(f){ state.filter=f; state.limit=PAGE; render(); },
+    setPerson(p){ state.person = state.person===p ? null : p; state.limit=PAGE; render(); },
+    showMore(){ state.limit+=PAGE*2; render(); },
 
     async settleBalance(from,to){
       const ids=state.entries.filter(e=>{ if(e.settled) return false; const {d,c}=getDC(e);
         return (d===from&&c===to)||(d===to&&c===from); }).map(e=>e.id);
+      if(!ids.length) return;
       const bal=computeBalances(state.entries.filter(e=>!e.settled)).find(b=>b.from===from&&b.to===to);
-      const ok=await ask({ title:"Saldo erledigen?",
-        text:`${ACCOUNTS[from].name} hat ${ACCOUNTS[to].name} ${bal?fmt(bal.amount):""} gezahlt? Dann ${ids.length===1?"wird":"werden"} ${plural(ids.length,"offene Buchung","offene Buchungen")} zwischen den beiden abgehakt.`,
-        ok:"Erledigt" });
+      const verb=ids.length===1?"wird":"werden";
+      const ok=await ask(bal && bal.zero
+        ? { title:"Buchungen abhaken?", text:`Die Buchungen zwischen ${ACCOUNTS[from].name} und ${ACCOUNTS[to].name} gleichen sich aus. Dann ${verb} ${plural(ids.length,"offene Buchung","offene Buchungen")} abgehakt.`, ok:"Abhaken" }
+        : { title:"Saldo erledigen?", text:`${ACCOUNTS[from].name} hat ${ACCOUNTS[to].name} ${bal?fmt(bal.amount):""} gezahlt? Dann ${verb} ${plural(ids.length,"offene Buchung","offene Buchungen")} zwischen den beiden abgehakt.`, ok:"Erledigt" });
       if(!ok) return;
       const set=new Set(ids), d=today();
-      commit(state.entries.map(e=> set.has(e.id) ? {...e, settled:true, settledDate:d} : e), plural(ids.length,"Buchung","Buchungen")+" erledigt");
+      commit(state.entries.map(e=> set.has(e.id) && !e.settled ? {...e, settled:true, settledDate:d} : e), plural(ids.length,"Buchung","Buchungen")+" erledigt");
     },
     toggleSettle(id){
+      // Schutz vor Doppeltipp: in "Offen" rutscht sonst die nächste Zeile unter den Finger
+      const now=Date.now(); if(now-lastToggle<450) return; lastToggle=now;
       const e=state.entries.find(x=>x.id===id); if(!e) return;
       const nowSettled=!e.settled;
-      commit(state.entries.map(x=> x.id===id ? (nowSettled ? {...x, settled:true, settledDate:today()} : (({settledDate,...r})=>({...r, settled:false}))(x)) : x),
+      commit(state.entries.map(x=> x.id===id ? setSettled(x, nowSettled) : x),
         nowSettled ? "Als erledigt markiert" : "Wieder offen");
     },
 
-    openNew(){ state.menuOpen=false; state.sheet={ id:null, form:blankForm(), error:null, enter:true }; render();
+    openNew(){ openSheet(null, blankForm());
       if(canHover()){ const el=document.getElementById("f-amount"); if(el) el.focus(); } },
     openEdit(id){ const e=state.entries.find(x=>x.id===id); if(!e) return;
-      state.sheet={ id, error:null, enter:true, form:{ type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac",
-        amount:String(e.amount).replace(".",","), date:e.date, note:e.note||"" } };
-      render(); },
+      openSheet(id, { type:e.type, debtor:e.debtor||"mp", creditor:e.creditor||"ac",
+        amount:e.amount.toFixed(2).replace(".",",").replace(/,00$/,""), date:e.date, note:e.note||"" }); },
     closeSheet(){ const s=state.sheet; if(!s||s.leaving) return;
       s.leaving=true; renderSheet();
       setTimeout(()=>{ if(state.sheet===s){ state.sheet=null; render(); } }, 170); },
-    sheetBg(ev){ if(ev.target===ev.currentTarget) App.closeSheet(); },
-    setType(k){ state.sheet.form.type=k; render(); },
+    // Schließen per Hintergrund/Escape: bei ungespeicherten Änderungen erst nachfragen
+    async requestClose(){
+      if(!state.sheet || state.sheet.leaving) return;
+      if(sheetDirty()){
+        const ok=await ask({ title:"Änderungen verwerfen?", text:"Die Eingaben in diesem Formular gehen verloren.", ok:"Verwerfen", danger:true });
+        if(!ok) return;
+      }
+      App.closeSheet();
+    },
+    bgDown(ev){ bgDownSelf = ev.target===ev.currentTarget; },
+    sheetBg(ev){ if(ev.target===ev.currentTarget && bgDownSelf) App.requestClose(); bgDownSelf=false; },
+    setType(k){ if(!has(TYPES,k)) return; state.sheet.form.type=k; renderSheet(); },
     pickAccount(field,k){ const f=state.sheet.form; const other=field==="debtor"?"creditor":"debtor";
       if(f[other]===k) f[other]=f[field];  // gleiche Person auf beiden Seiten → tauschen
-      f[field]=k; render(); },
-    swapAccounts(){ const f=state.sheet.form; [f.debtor,f.creditor]=[f.creditor,f.debtor]; render(); },
-    onField(k,v){ state.sheet.form[k]=v;   // kein Re-Render → Fokus bleibt beim Tippen
+      f[field]=k; renderSheet(); },
+    swapAccounts(){ const f=state.sheet.form; [f.debtor,f.creditor]=[f.creditor,f.debtor]; renderSheet(); },
+    onField(k,v){ if(!state.sheet) return; state.sheet.form[k]=v;   // kein Re-Render → Fokus bleibt beim Tippen
       if(k==="amount" && state.sheet.error){ state.sheet.error=null; const b=document.querySelector(".amount-box"); if(b) b.classList.remove("err"); const t=document.querySelector(".err-text"); if(t) t.remove(); } },
 
-    save(){
+    // toggle=true: Änderungen speichern UND Erledigt-Status umschalten
+    save(toggle){
       const s=state.sheet; if(!s||s.leaving) return; const f=s.form;
-      const amount=parseAmount(f.amount);
-      if(!(amount>0)){ s.error="Bitte einen gültigen Betrag eingeben, z.B. 1250,50"; render(); const el=document.getElementById("f-amount"); if(el) el.focus(); return; }
+      const parsed=parseAmount(f.amount);
+      if(parsed.err){ s.error=parsed.err; renderSheet(); const el=document.getElementById("f-amount"); if(el) el.focus(); return; }
       const custom=f.type==="custom";
-      const data={ type:f.type, amount, currency:CUR, debtor:custom?f.debtor:null, creditor:custom?f.creditor:null,
-        date:/^\d{4}-\d{2}-\d{2}$/.test(f.date)?f.date:today(), note:(f.note||"").trim() };
-      let entries;
+      const data={ type:f.type, amount:parsed.v, currency:CUR, debtor:custom?f.debtor:null, creditor:custom?f.creditor:null,
+        date:validDate(f.date)?f.date:today(), note:(f.note||"").trim() };
       if(s.id===null){
         let id=Date.now(); while(state.entries.some(e=>e.id===id)) id++;
-        entries=[...state.entries, { id, ...data, settled:false }];
-      } else entries=state.entries.map(e=> e.id===s.id ? {...e, ...data} : e);
+        state.sheet=null;
+        if(persist([...state.entries, { id, ...data, settled:false }])) showToast("Buchung hinzugefügt");
+        return;
+      }
+      const old=state.entries.find(e=>e.id===s.id);
       state.sheet=null;
-      persist(entries);
-      showToast(s.id===null ? "Buchung hinzugefügt" : "Gespeichert");
+      if(!old){ render(); showToast("Diese Buchung gibt es nicht mehr"); return; }
+      const updated=toggle ? setSettled({...old, ...data}, !old.settled) : {...old, ...data};
+      commit(state.entries.map(e=> e.id===s.id ? updated : e),
+        toggle ? (updated.settled ? "Gespeichert und erledigt" : "Gespeichert und wieder offen") : "Gespeichert");
     },
-    toggleSettleFromSheet(){ const id=state.sheet&&state.sheet.id; state.sheet=null; App.toggleSettle(id); },
-    deleteEntry(){ const id=state.sheet&&state.sheet.id; if(id===null) return; state.sheet=null;
+    deleteEntry(){ const s=state.sheet; if(!s||s.id===null) return; const id=s.id; state.sheet=null;
       commit(state.entries.filter(x=>x.id!==id), "Buchung gelöscht"); },
 
     dialogAnswer(v){ closeDialog(v); },
     dialogBg(ev){ if(ev.target===ev.currentTarget) closeDialog(false); },
-    undo(){ const t=state.toast; if(!t||!t.undo) return; clearTimeout(toastTimer); state.toast=null; t.undo(); showToast("Rückgängig gemacht"); },
+    undo(){ const t=state.toast; if(!t||!t.undo) return; clearTimeout(toastTimer); state.toast=null;
+      if(t.undo()) showToast("Rückgängig gemacht"); },
+    dismissToast(){ hideToast("force"); },
 
-    doExport(){
-      state.menuOpen=false;
-      const blob=new Blob([JSON.stringify(state.entries,null,2)],{type:"application/json"});
-      const url=URL.createObjectURL(blob); const a=document.createElement("a");
-      a.href=url; a.download="finanzen-backup-"+today()+".json";
+    async doExport(){
+      state.menuOpen=false; render();
+      const json=JSON.stringify(state.entries,null,2), name="finanzen-backup-"+today()+".json";
+      const markDone=msg=>{ storeSet(BACKUP_KEY, today()); render(); showToast(msg); };
+      // Auf dem iPhone (v.a. als Home-Bildschirm-App) klappt der Teilen-Dialog zuverlässiger als ein Download
+      if(matchMedia("(pointer:coarse)").matches && navigator.canShare && typeof File==="function"){
+        try{
+          const file=new File([json], name, {type:"application/json"});
+          if(navigator.canShare({files:[file]})){
+            await navigator.share({ files:[file], title:"Finanzen Backup" });
+            markDone("Backup gesichert"); return;
+          }
+        }catch(err){
+          if(err && err.name==="AbortError"){ showToast("Backup abgebrochen"); return; }
+          // sonst unten per Download versuchen
+        }
+      }
+      const url=URL.createObjectURL(new Blob([json],{type:"application/json"}));
+      const a=document.createElement("a"); a.href=url; a.download=name;
       document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url), 4000);
-      try{ localStorage.setItem(BACKUP_KEY, today()); }catch(e){}
-      render(); showToast("Backup exportiert");
+      setTimeout(()=>URL.revokeObjectURL(url), 60000);
+      markDone("Backup heruntergeladen");
     },
     triggerImport(){ state.menuOpen=false; render(); document.getElementById("import-file").click(); },
-    doReset(){
-      ask({ title:"Alles löschen?", text:`Alle ${plural(state.entries.length,"Buchung","Buchungen")} werden von diesem Gerät entfernt. Mach am besten vorher ein Backup.`, ok:"Löschen", danger:true })
-        .then(ok=>{ if(ok) commit([], "Alle Buchungen gelöscht"); });
+    async doReset(){
+      const ok=await ask({ title:"Alles löschen?", text:`Alle ${plural(state.entries.length,"Buchung","Buchungen")} werden von diesem Gerät entfernt. Mach am besten vorher ein Backup.`, ok:"Löschen", danger:true });
+      if(!ok) return;
+      snapshot(); state.person=null; commit([], "Alle Buchungen gelöscht");
+    },
+    async restoreSnapshot(){
+      const snap=readSnapshot(); if(!snap) return;
+      let result; try{ result=normalize(snap.entries); }catch(e){ showToast("Gesicherter Stand ist unlesbar"); return; }
+      const ok=await ask({ title:"Alten Stand zurückholen?", text:`Ersetzt die aktuellen ${plural(state.entries.length,"Buchung","Buchungen")} durch den Stand vom ${dayLabel(snap.date)} (${plural(result.entries.length,"Buchung","Buchungen")}).`, ok:"Zurückholen" });
+      if(!ok) return;
+      state.person=null; commit(result.entries, "Stand vom "+dayLabel(snap.date)+" wiederhergestellt");
     }
   };
+  function setSettled(e, settled){
+    if(settled) return {...e, settled:true, settledDate:today()};
+    const {settledDate, ...rest}=e; return {...rest, settled:false};
+  }
 
   document.getElementById("import-file").addEventListener("change", function(){
     const input=this, file=input.files[0]; if(!file) return;
@@ -735,7 +861,9 @@
       const ok=await ask({ title:"Backup importieren?",
         text:`Ersetzt die aktuellen ${plural(state.entries.length,"Buchung","Buchungen")} durch ${plural(result.entries.length,"Buchung","Buchungen")} aus dem Backup.`+(result.skipped?` ${result.skipped} alte/ungültige Einträge werden übersprungen.`:""),
         ok:"Importieren" });
-      if(ok){ state.person=null; commit(result.entries, plural(result.entries.length,"Buchung","Buchungen")+" importiert"); }
+      if(!ok) return;
+      if(state.entries.length) snapshot();
+      state.person=null; commit(result.entries, plural(result.entries.length,"Buchung","Buchungen")+" importiert");
     };
     r.onerror=()=>{ input.value=""; showToast("Datei konnte nicht gelesen werden"); };
     r.readAsText(file);
@@ -744,25 +872,47 @@
   document.addEventListener("keydown", ev=>{
     if(ev.key==="Escape"){
       if(state.dialog) closeDialog(false);
-      else if(state.sheet) App.closeSheet();
+      else if(state.sheet) App.requestClose();
       else if(state.menuOpen) App.closeMenu();
     } else if(ev.key==="Enter" && state.sheet && !state.dialog && ev.target.matches && ev.target.matches("#f-amount,#f-note")){
       ev.preventDefault(); App.save();
     }
   });
 
-  // App-Icon für den Home-Bildschirm (wird zur Laufzeit gezeichnet, keine Extra-Datei nötig)
-  (function setIcon(){ try{
-    const c=document.createElement("canvas"); c.width=c.height=180; const x=c.getContext("2d");
-    const g=x.createLinearGradient(0,0,180,180); g.addColorStop(0,"#6366F1"); g.addColorStop(1,"#8B5CF6");
-    x.fillStyle=g; x.fillRect(0,0,180,180);
-    x.fillStyle="#fff"; x.font="700 104px -apple-system, 'Segoe UI', Roboto, sans-serif";
-    x.textAlign="center"; x.textBaseline="middle"; x.fillText("$",90,98);
-    const href=c.toDataURL("image/png");
-    ["apple-touch-icon","icon"].forEach(rel=>{ const l=document.createElement("link"); l.rel=rel; l.href=href; document.head.appendChild(l); });
-  }catch(e){} })();
+  /* ====== iPhone-Feinschliff ====== */
+  // :active-Effekte auf iOS aktivieren
+  document.addEventListener("touchstart", ()=>{}, {passive:true});
+  // Seite hinter Sheet/Dialog nicht mitscrollen lassen (overflow:hidden allein reicht auf iOS nicht immer)
+  document.addEventListener("touchmove", ev=>{
+    if((state.sheet || state.dialog) && !(ev.target.closest && ev.target.closest(".sheet"))) ev.preventDefault();
+  }, {passive:false});
+  // Bildschirmtastatur: Sheet nach oben schieben, damit "Hinzufügen" sichtbar bleibt
+  if(window.visualViewport){
+    const vv=window.visualViewport;
+    const updKb=()=>{ const kb=Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      document.documentElement.style.setProperty("--kb", (kb>80?kb:0)+"px"); };
+    vv.addEventListener("resize", updKb); vv.addEventListener("scroll", updKb);
+  }
+  document.addEventListener("focusin", ev=>{
+    if(ev.target.closest && ev.target.closest(".sheet") && ev.target.matches("input"))
+      setTimeout(()=>ev.target.scrollIntoView({block:"nearest", behavior:"smooth"}), 300);
+  });
 
-  render();
+  // Browser bitten, die Daten nicht automatisch zu löschen
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{}); }catch(e){}
+  // Offline-Start ermöglichen
+  if("serviceWorker" in navigator && /^https?:$/.test(location.protocol))
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+  try{
+    render();
+    if(loaded.notice) showToast(loaded.notice, null, true);
+  }catch(err){
+    // Notfall-Ansicht: Daten wenigstens exportierbar machen
+    document.getElementById("app").innerHTML=`<div class="wrap"><div class="empty" style="margin-top:60px">
+      Die App konnte nicht angezeigt werden.<br><br>
+      <button class="btn-soft" onclick="App.doExport()">Daten als Backup exportieren</button></div></div>`;
+  }
 })();
 </script>
 </body>
